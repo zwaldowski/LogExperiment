@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- iOS 10, macOS Sierra, and friends bring a new logging subsystem that's
+supposed to scale from the kernel, up to frameworks, and up to apps. It defaults
+to a more regimented, privacy-focused approach that large apps and complex
+systems need.
+
+It, along with Activity Tracing introduced in iOS 8 and macOS Yosemite and the
+Console app in macOS Sierra, hope to help you graduate from caveman debugging to
+help you identify issues across time, events, user input, and even process
+boundaries.
+
+This configuration profile template allows you to change logging behaviors
+for your app, your frameworks, third party code, and even Apple code without
+access to the source. The idea is to leave all your logging code in your app —
+even when shipping – and change the information level at runtime.
+
+Read more about this:
+ - https://developer.apple.com/reference/os/1891852-logging
+ - https://developer.apple.com/videos/play/wwdc2016/721/
+
+You can modify and install this payload by double-clicking it in macOS, or on
+an iOS-based device using Apple Configurator. You can also use Apple
+Configurator to sign and send this profile to others.
+
+This, too, is all documented:
+- https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/iPhoneOTAConfiguration/Introduction/Introduction.html#//apple_ref/doc/uid/TP40009505
+- https://developer.apple.com/library/ios/featuredarticles/iPhoneConfigurationProfileRef/Introduction/Introduction.html
+- http://nshipster.com/configuration-profiles/
+
+And, always remember: assume positive intent. -->
+<dict>
+	<!-- Change this UUID using `uuidgen`. -->
+	<key>PayloadUUID</key>
+	<string>00000000-0000-0000-0000-000000000000</string>
+	<!-- Increment when changing the contents of ANY payload. -->
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+	<!-- Change this identifier and other info based on your credentials. -->
+	<key>PayloadIdentifier</key>
+	<string>com.great-company.my-great-app.logging</string>
+	<key>PayloadDisplayName</key>
+	<string>Extra Logging for My Great App</string>
+	<key>PayloadOrganization</key>
+	<string>Great Company</string>
+	<!-- This message is displayed to the user during install. -->
+	<key>ConsentText</key>
+	<dict>
+		<key>default</key>
+		<string>The Extra Logging for My Great App Profile generates extra data to help us troubleshoot issues during the development process. Increased logging maay increase battery consumption or decrease performance in Great Company applications.
+
+You will be able to turn on and off logging at any time while the Profile is installed. To turn off logging on your macOS device, open System Preferences, select rofiles," then select "Extra Logging for My Great App" and click the remove button.
+
+This profile will automatically be removed after 30 days.</string>
+	</dict>
+	<!-- Configuration 'payloads' affect various parts in macOS and iOS. -->
+	<key>PayloadContent</key>
+	<array>
+		<!-- iOS 10/macOS Sierra-style logging payload -->
+		<dict>
+				<!-- Increment when changing the contents. -->
+				<key>PayloadVersion</key>
+				<integer>1</integer>
+				<!-- Change this UUID using `uuidgen`. -->
+				<key>PayloadUUID</key>
+				<string>00000000-0000-0000-0000-000000000000</string>
+				<!-- The contents of these follow the format at:
+				https://developer.apple.com/reference/os/1891852-logging#1682426 -->
+				<key>Subsystems</key>
+				<dict>
+					<!-- A subsystem is your app's bundle ID or is explicitly
+					set through the os_log_create. Wildcards are not
+					accepted. These dicts may be written as <#subsystem#>.plist
+					to /Library/Preferences/Logging/Subsystems/. -->
+					<key>com.great-company.my-great-app</key>
+					<dict>
+						<key>DEFAULT-OPTIONS</key>
+						<dict>
+							<key>Level</key>
+							<dict>
+								<!-- The lowest-level log that's enabled.
+								All log messages sent through NSLog are at
+								the Default level.
+
+								Accepted values:
+								 - Inherit: The default. Categories inherit
+								   subsystem behavior, subsystems inherit the
+								   system (OS) behavior.
+								 - Default: Only default-level messages.
+								 - Info: Default-level and info-level messages.
+								 - Debug: All messages. -->
+								<key>Enable</key>
+								<string>Debug</string>
+								<!-- The lowest-level log that's written to
+								disk.
+
+								Accepted values:
+								 - Inherit: The default. Categories inherit
+								   subsystem behavior, subsystems inherit the
+								   system (OS) behavior.
+								 - Default: Only default-level messages.
+								 - Info: Default-level and info-level messages.
+								 - Debug: All messages. -->
+								<key>Persist</key>
+								<string>Debug</string>
+							</dict>
+							<!-- Changes how `%@` et. al. are formatted into
+							the log.
+
+							To ensure the privacy of users, it is recommended
+							that log messages consist strictly of static strings
+							and numbers.
+
+							Accepted values:
+							 - Inherit. The default. Categories inherit
+							   subsystem behavior, subsystems inherit the
+							   system (OS) behavior.
+							 - Public: Dynamic strings and complex dynamic
+							   objects are collected for the log.
+							 - Private: Static strings and numbers are collected
+							   for the log. -->
+							<key>Default-Privacy-Setting</key>
+							<string>Public</string>
+							<!-- Changes how long non-critical messages stay
+							in the log, in days (I think).
+
+							Keys for this dictionary are the non-critical
+							log levels: Default, Debug, and Info. -->
+							<key>TTL</key>
+							<dict>
+								<key>Default</key>
+								<integer>14</integer>
+							</dict>
+							<!-- If messages are attached to the activity
+							tree, both in the Console app and in crash logs. -->
+							<key>Propagate-with-Activity</key>
+							<true/>
+						</dict>
+						<!-- Categories are explicitly set through
+						os_log_create, and override the DEFAULT_OPTIONS
+						payload. -->
+						<key>CategoryName</key>
+						<dict/>
+						<!-- Enables large messages in the log. This WILL have
+						a detrimental effect on performance. -->
+						<key>Enable-Oversize-Messages</key>
+						<true/>
+					</dict>
+				</dict>
+				<!-- end of subsystem list -->
+				<key>PayloadType</key>
+				<string>com.apple.system.logging</string>
+				<key>PayloadIdentifier</key>
+				<string>LoggingPayload</string>
+		</dict>
+		<!-- end of logging payload -->
+	</array>
+	<!-- end of payload items -->
+	<!-- Profile self-removes in 30 days. -->
+	<key>DurationUntilRemoval</key>
+	<integer>2592000</integer>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+</dict>
+</plist>
