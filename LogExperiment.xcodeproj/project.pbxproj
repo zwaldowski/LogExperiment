@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DB31CCCA1E25D0F200868108 /* DynamicLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB31CCC91E25D0F200868108 /* DynamicLibrary.swift */; };
 		DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4ED7301D81F633000F38A6 /* Loggy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7351D81F633000F38A6 /* Loggy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; };
 		DB4ED7361D81F633000F38A6 /* Loggy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		DB4ED73C1D81F63E000F38A6 /* Log.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB4ED73B1D81F63E000F38A6 /* Log.swift */; };
-		DB4ED73E1D8228E1000F38A6 /* os_trace.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4ED73D1D8228E1000F38A6 /* os_trace.m */; };
 		DB8873FF1D806685008FF01B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8873FE1D806685008FF01B /* AppDelegate.swift */; };
 		DB8874011D806685008FF01B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8874001D806685008FF01B /* ViewController.swift */; };
 		DB8874041D806685008FF01B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB8874021D806685008FF01B /* Main.storyboard */; };
 		DB8874061D806685008FF01B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DB8874051D806685008FF01B /* Assets.xcassets */; };
 		DB8874091D806685008FF01B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB8874071D806685008FF01B /* LaunchScreen.storyboard */; };
+		DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */; };
 		DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBEE0BF41D8270AF007A562E /* Activity.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,11 +45,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DB31CCC91E25D0F200868108 /* DynamicLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DynamicLibrary.swift; sourceTree = "<group>"; };
 		DB4ED72E1D81F633000F38A6 /* Loggy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Loggy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB4ED7301D81F633000F38A6 /* Loggy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Loggy.h; sourceTree = "<group>"; };
 		DB4ED7311D81F633000F38A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DB4ED73B1D81F63E000F38A6 /* Log.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Log.swift; sourceTree = "<group>"; };
-		DB4ED73D1D8228E1000F38A6 /* os_trace.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = os_trace.m; sourceTree = "<group>"; };
 		DB8873FB1D806685008FF01B /* LogExperiment.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LogExperiment.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB8873FE1D806685008FF01B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DB8874001D806685008FF01B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -57,6 +56,7 @@
 		DB8874051D806685008FF01B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB8874081D806685008FF01B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		DB88740A1D806685008FF01B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSubsystem.swift; sourceTree = "<group>"; };
 		DBEE0BF41D8270AF007A562E /* Activity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,10 +83,10 @@
 			isa = PBXGroup;
 			children = (
 				DBEE0BF41D8270AF007A562E /* Activity.swift */,
-				DB4ED73B1D81F63E000F38A6 /* Log.swift */,
-				DB4ED7301D81F633000F38A6 /* Loggy.h */,
-				DB4ED73D1D8228E1000F38A6 /* os_trace.m */,
+				DB31CCC91E25D0F200868108 /* DynamicLibrary.swift */,
 				DB4ED7311D81F633000F38A6 /* Info.plist */,
+				DB4ED7301D81F633000F38A6 /* Loggy.h */,
+				DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */,
 			);
 			path = Loggy;
 			sourceTree = "<group>";
@@ -180,7 +180,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0800;
-				LastUpgradeCheck = 0800;
+				LastUpgradeCheck = 0810;
 				ORGANIZATIONNAME = "Big Nerd Ranch";
 				TargetAttributes = {
 					DB4ED72D1D81F633000F38A6 = {
@@ -241,8 +241,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */,
-				DB4ED73C1D81F63E000F38A6 /* Log.swift in Sources */,
-				DB4ED73E1D8228E1000F38A6 /* os_trace.m in Sources */,
+				DB31CCCA1E25D0F200868108 /* DynamicLibrary.swift in Sources */,
+				DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,7 +299,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = Loggy/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.bignerdranch.Loggy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -326,7 +326,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = Loggy/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.bignerdranch.Loggy;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -356,6 +356,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -405,6 +406,7 @@
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_SUSPICIOUS_MOVES = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -436,7 +438,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = H3Q4W24HH5;
 				INFOPLIST_FILE = LogExperiment/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.bignerdranch.LogExperiment;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -451,7 +453,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = H3Q4W24HH5;
 				INFOPLIST_FILE = LogExperiment/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.bignerdranch.LogExperiment;
 				PRODUCT_NAME = "$(TARGET_NAME)";

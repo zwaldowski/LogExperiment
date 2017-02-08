@@ -7,42 +7,23 @@
 
 import os.activity
 
-private final class LegacyActivityContext {
-    let dsoHandle: UnsafeRawPointer?
-    let description: UnsafePointer<CChar>
-    let flags: os_activity_flag_t
-
-    init(dsoHandle: UnsafeRawPointer?, description: UnsafePointer<CChar>, flags: os_activity_flag_t) {
-        self.dsoHandle = dsoHandle
-        self.description = description
-        self.flags = flags
-    }
-}
+@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
+private let os_activity_create: @convention(c) (UnsafeRawPointer?, UnsafePointer<Int8>?, AnyObject?, os_activity_flag_t) -> AnyObject = DynamicLibrary.default.symbol(named: "_os_activity_create")
 
 @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-@_silgen_name("_os_activity_create") private func _os_activity_create(_ dso: UnsafeRawPointer?, _ description: UnsafePointer<Int8>, _ parent : Unmanaged<AnyObject>?, _ flags: os_activity_flag_t) -> AnyObject!
-
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-@_silgen_name("os_activity_apply") private func _os_activity_apply(_ storage: AnyObject, _ block: @convention(block) () -> ())
-
-@_silgen_name("_os_activity_initiate") private func __os_activity_initiate(_ dso: UnsafeRawPointer?, _ description: UnsafePointer<Int8>, _ flags: os_activity_flag_t, _ block: @convention(block) () -> ())
+private let os_activity_apply: @convention(c) (AnyObject, (Void) -> ()) -> () = DynamicLibrary.default.symbol(named: "os_activity_apply")
 
 @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-@_silgen_name("os_activity_scope_enter") private func _os_activity_scope_enter(_ storage: AnyObject, _ state: UnsafeMutablePointer<os_activity_scope_state_s>)
-
-@_silgen_name("_os_activity_start") private func __os_activity_start(_ dso: UnsafeRawPointer?, _ description: UnsafePointer<Int8>, _ flags: os_activity_flag_t) -> UInt64
+private let os_activity_scope_enter: @convention(c) (AnyObject, UnsafeMutablePointer<os_activity_scope_state_s>) -> () = DynamicLibrary.default.symbol(named: "os_activity_scope_enter")
 
 @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-@_silgen_name("os_activity_scope_leave") private func _os_activity_scope_leave(_ state: UnsafeMutablePointer<os_activity_scope_state_s>)
-
-@_silgen_name("os_activity_end") private func __os_activity_end(_ state: UInt64)
+private let os_activity_scope_leave: @convention(c) (UnsafeMutablePointer<os_activity_scope_state_s>) -> () = DynamicLibrary.default.symbol(named: "os_activity_scope_leave")
 
 @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let OS_ACTIVITY_NONE = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: Unmanaged<AnyObject>.self)
+private let OS_ACTIVITY_NONE: Unmanaged<AnyObject> = DynamicLibrary.default.symbol(named: "_os_activity_none")
 
 @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let OS_ACTIVITY_CURRENT = unsafeBitCast(dlsym(UnsafeMutableRawPointer(bitPattern: -2), "_os_activity_current"), to: Unmanaged<AnyObject>.self)
+private let OS_ACTIVITY_CURRENT: Unmanaged<AnyObject> = DynamicLibrary.default.symbol(named: "_os_activity_current")
 
 public struct Activity {
 
@@ -60,6 +41,7 @@ public struct Activity {
         /// new activity a top level activity. This allows seeing what
         /// activity triggered work without actually relating the activities.
         public static let detached = Options(rawValue: OS_ACTIVITY_FLAG_DETACHED.rawValue)
+
         /// Will only create a new activity if none present.
         ///
         /// If an activity ID is already present, a new activity will be
@@ -72,34 +54,26 @@ public struct Activity {
 
     /// Creates an activity.
     public init(_ description: StaticString, dso: UnsafeRawPointer? = #dsohandle, options: Options = []) {
-        self.opaque = description.withUTF8Buffer { (buf: UnsafeBufferPointer<UInt8>) -> AnyObject in
-            let str = unsafeBitCast(buf.baseAddress!, to: UnsafePointer<Int8>.self)
+        self.opaque = description.withUTF8Buffer { (buffer: UnsafeBufferPointer<UInt8>) -> AnyObject in
+            assert(OS_ACTIVITY_OBJECT_API != 0)
+
+            let string = UnsafeRawPointer(buffer.baseAddress)?.assumingMemoryBound(to: Int8.self)
             let flags = os_activity_flag_t(rawValue: options.rawValue)
-            if #available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *) {
-                assert(OS_ACTIVITY_OBJECT_API != 0)
-                return _os_activity_create(dso, str, OS_ACTIVITY_CURRENT, flags)
-            } else {
-                return LegacyActivityContext(dsoHandle: dso, description: str, flags: flags)
-            }
+            return os_activity_create(dso, string, Activity.current.opaque, flags)
         }
     }
 
-    private func active(execute body: @convention(block) () -> ()) {
-        if #available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *) {
-            assert(OS_ACTIVITY_OBJECT_API != 0)
-            _os_activity_apply(opaque, body)
-        } else {
-            let context = opaque as! LegacyActivityContext
-            __os_activity_initiate(context.dsoHandle, context.description, context.flags, body)
-        }
+    private func withActive(execute body: (Void) -> ()) {
+        assert(OS_ACTIVITY_OBJECT_API != 0)
+        os_activity_apply(opaque, body)
     }
 
     /// Executes a function body within the context of the activity.
-    public func active<Return>(execute body: () throws -> Return) rethrows -> Return {
+    public func withActive<Return>(execute body: () throws -> Return) rethrows -> Return {
         func impl(execute work: () throws -> Return, recover: (Error) throws -> Return) rethrows -> Return {
             var result: Return?
             var error: Error?
-            active {
+            withActive {
                 do {
                     result = try work()
                 } catch let e {
@@ -125,14 +99,8 @@ public struct Activity {
 
         /// Pops activity state to `self`.
         public mutating func leave() {
-            if #available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *) {
-                assert(OS_ACTIVITY_OBJECT_API != 0)
-                _os_activity_scope_leave(&state)
-            } else {
-                UnsafeRawPointer(bitPattern: Int(state.opaque.0)).map(Unmanaged<AnyObject>.fromOpaque)?.release()
-                __os_activity_end(state.opaque.1)
-            }
-
+            assert(OS_ACTIVITY_OBJECT_API != 0)
+            os_activity_scope_leave(&state)
         }
     }
 
@@ -145,25 +113,20 @@ public struct Activity {
     ///    ... do some work ...
     ///
     public func enter() -> Scope {
+        assert(OS_ACTIVITY_OBJECT_API != 0)
+
         var scope = Scope()
-        if #available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *) {
-            assert(OS_ACTIVITY_OBJECT_API != 0)
-            _os_activity_scope_enter(opaque, &scope.state)
-        } else {
-            let context = opaque as! LegacyActivityContext
-            scope.state.opaque.0 = numericCast(Int(bitPattern: Unmanaged.passRetained(context).toOpaque()))
-            scope.state.opaque.1 = __os_activity_start(context.dsoHandle, context.description, context.flags)
-        }
+        os_activity_scope_enter(opaque, &scope.state)
         return scope
     }
 
     /// Creates an activity.
     @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
     public init(_ description: StaticString, dso: UnsafeRawPointer? = #dsohandle, parent: Activity, options: Options = []) {
-        self.opaque = description.withUTF8Buffer { (buf: UnsafeBufferPointer<UInt8>) -> AnyObject in
-            let str = unsafeBitCast(buf.baseAddress!, to: UnsafePointer<Int8>.self)
+        self.opaque = description.withUTF8Buffer { (buffer: UnsafeBufferPointer<UInt8>) -> AnyObject in
+            let string = UnsafeRawPointer(buffer.baseAddress)?.assumingMemoryBound(to: Int8.self)
             let flags = os_activity_flag_t(rawValue: options.rawValue)
-            return _os_activity_create(dso, str, Unmanaged.passRetained(parent.opaque), flags)
+            return os_activity_create(dso, string, parent.opaque, flags)
         }
     }
 
@@ -203,14 +166,10 @@ public struct Activity {
     ///    Activity.labelUserAction("Empty trash")
     ///
     /// Where the underlying name will be "gesture:" or "menuSelect:".
-    public static func labelUserAction(_ description: StaticString, dso: UnsafeRawPointer? = #dsohandle) {
-        description.withUTF8Buffer { (buf: UnsafeBufferPointer<UInt8>) in
-            let str = unsafeBitCast(buf.baseAddress!, to: UnsafePointer<Int8>.self)
-            if #available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *) {
-                _os_activity_label_useraction(UnsafeMutableRawPointer(mutating: dso), str)
-            } else {
-                _os_activity_set_breadcrumb(UnsafeMutableRawPointer(mutating: dso), str)
-            }
+    public static func labelUserAction(_ description: StaticString, dso: UnsafeRawPointer = #dsohandle) {
+        description.withUTF8Buffer { (buffer: UnsafeBufferPointer<UInt8>) in
+            let string = UnsafeRawPointer(buffer.baseAddress)!.assumingMemoryBound(to: Int8.self)
+            _os_activity_label_useraction(UnsafeMutableRawPointer(mutating: dso), string)
         }
     }
     

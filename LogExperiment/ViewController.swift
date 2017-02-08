@@ -18,13 +18,14 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        Log.ui.debug("This will only show in Xcode!")
         Log.ui.show("Hello, %@!", "world")
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        Activity("stuff").active {
+        Activity("stuff").withActive {
             Log.processing.show("Doin' some work...")
         }
     }
