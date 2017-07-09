@@ -28,5 +28,4 @@ _swift_os_activity_current(void) {
 
 extern const void * _Nullable _swift_os_log_return_address(void);
 
-extern void _swift_os_log(const void * _Nullable dso, const void * _Nullable retaddr, os_log_t _Nonnull oslog, os_log_type_t type, const uint8_t * _Nullable format, va_list args);
-
+extern void _swift_os_log(const void *_Nonnull dso, const void *_Nullable retaddr, os_log_t _Nonnull oslog, os_log_type_t type, const uint8_t *_Nullable format, va_list args);
