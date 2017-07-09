@@ -27,6 +27,10 @@ class ViewController: UIViewController {
 
         Activity("stuff").withActive {
             Log.processing.show("Doin' some work...")
+
+            Activity("more stuff").withActive {
+                Log.processing.error("Things are going bad down here, cap'n!")
+            }
         }
     }
 
