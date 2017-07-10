@@ -81,7 +81,7 @@ extension String {
 ///   tool to view a live stream of activity.
 ///
 /// For more info:
-/// - https://developer.apple.com/documentation/os/logging
+/// - https://developer.apple.com/documentation/os/logging?language=objc
 /// - https://developer.apple.com/library/content/samplecode/Logging/Introduction/Intro.html
 /// - https://developer.apple.com/videos/play/wwdc2016/721
 public enum Log {
@@ -139,7 +139,7 @@ public enum Log {
     /// might result in a failure.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -156,7 +156,7 @@ public enum Log {
     /// environment and not in shipping software.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -173,7 +173,7 @@ public enum Log {
     /// method to capture information that may be helpful, but isn’t essential.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -188,7 +188,7 @@ public enum Log {
     /// Error-level messages are always saved in the data store.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -203,7 +203,7 @@ public enum Log {
     /// Fault-level messages are always saved in the data store.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -237,7 +237,7 @@ public enum Log {
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build.
     /// - parameter line: The line number to print along with `message` in a
@@ -260,7 +260,7 @@ public enum Log {
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failure
     ///   was called.
@@ -287,7 +287,7 @@ public enum Log {
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failed.
     /// - parameter line: The line number to print along with `message` in a
@@ -311,7 +311,7 @@ public enum Log {
     /// call if your API was improperly used. Program execution will be stopped.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message`.
     /// - parameter line: The line number to print along with `message`.
     /// - parameter dso: The shared object handle, used by the OS to record
@@ -331,7 +331,7 @@ public enum Log {
     /// call if your API was improperly used. Program execution will be stopped.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failure occurred.
     /// - parameter line: The line number to print along with `message` in a
@@ -355,7 +355,7 @@ public enum Log {
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failed.
     /// - parameter line: The line number to print along with `message`. The
@@ -386,11 +386,11 @@ public enum Log {
 ///             case user
 ///             case network
 ///         }
-///         
+///
 ///         @IBAction func userTappedButton(_ sender: Any) {
 ///             Log.user.debug("They tapped the button!")
 ///         }
-///         
+///
 ///         func requestFailed(error: Error) {
 ///             Log.network.error("Could not log in: %@", error)
 ///         }
@@ -399,13 +399,13 @@ public enum Log {
 public protocol LogSubsystem {
     /// The name of a subsystem, such as "networking".
     static var name: String { get }
-    
+
     /// A stage or grouping for a subsystem, such as "setup" or "teardown".
     var categoryName: String { get }
 }
 
 extension LogSubsystem {
-    
+
     /// By default, the description of `Self`.
     public static var name: String {
         let name = String(reflecting: self)
@@ -413,7 +413,7 @@ extension LogSubsystem {
         let endWithoutExtraneousName = name.range(of: ".", options: .backwards, range: startWithModule ..< name.endIndex)?.lowerBound ?? name.endIndex
         return name[name.startIndex ..< endWithoutExtraneousName]
     }
-    
+
     /// By default, the description of `self`.
     public var categoryName: String {
         return String(describing: self)
@@ -435,7 +435,7 @@ extension LogSubsystem {
     public func show(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         Log.show(message, type: .default, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
     }
-    
+
     /// Issues a log message at the debug level.
     ///
     /// Debug-level messages are only captured in memory when debug logging is
@@ -443,7 +443,7 @@ extension LogSubsystem {
     /// environment and not in shipping software.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -452,7 +452,7 @@ extension LogSubsystem {
     public func debug(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         Log.show(message, type: .debug, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
     }
-    
+
     /// Issues a log message at the info level.
     ///
     /// Info-level messages are initially stored in memory, but are not moved to
@@ -460,7 +460,7 @@ extension LogSubsystem {
     /// method to capture information that may be helpful, but isn’t essential.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -469,13 +469,13 @@ extension LogSubsystem {
     public func info(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         Log.show(message, type: .info, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
     }
-    
+
     /// Issues a log message at the error level.
     ///
     /// Error-level messages are always saved in the data store.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -484,13 +484,13 @@ extension LogSubsystem {
     public func error(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         Log.show(message, type: .error, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
     }
-    
+
     /// Issues a log message at the fault level.
     ///
     /// Fault-level messages are always saved in the data store.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
@@ -499,7 +499,7 @@ extension LogSubsystem {
     public func fault(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         Log.show(message, type: .fault, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
     }
-    
+
     /// Issues a log message at the debug level with the current function name.
     ///
     /// Debug-level messages are only captured in memory when debug logging is
@@ -524,7 +524,7 @@ extension LogSubsystem {
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build.
     /// - parameter line: The line number to print along with `message` in a
@@ -547,7 +547,7 @@ extension LogSubsystem {
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failure
     ///   was called.
@@ -574,7 +574,7 @@ extension LogSubsystem {
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failed.
     /// - parameter line: The line number to print along with `message` in a
@@ -598,7 +598,7 @@ extension LogSubsystem {
     /// call if your API was improperly used. Program execution will be stopped.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message`.
     /// - parameter line: The line number to print along with `message`.
     /// - parameter dso: The shared object handle, used by the OS to record
@@ -618,7 +618,7 @@ extension LogSubsystem {
     /// call if your API was improperly used. Program execution will be stopped.
     ///
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failure occurred.
     /// - parameter line: The line number to print along with `message` in a
@@ -642,7 +642,7 @@ extension LogSubsystem {
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
     /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging#1682416).
+    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failed.
     /// - parameter line: The line number to print along with `message`. The
