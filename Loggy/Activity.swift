@@ -50,7 +50,7 @@ public struct Activity {
 
     /// Creates a new activity.
     ///
-    /// - parameter description: A label for the group of code.
+    /// - parameter label: A description for the group of code.
     /// - parameter parent: Defines the owning activity in the stack, either
     ///   from a known other activity, or one of the global activity constants.
     ///   Defaults to the currently in-scope activity.
@@ -59,14 +59,14 @@ public struct Activity {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   activity was created.
-    public init(_ description: StaticString, parent: Activity = .current, options: Options = [], containingBinary dso: UnsafeRawPointer = #dsohandle) {
-        self.reference = description.withUTF8Buffer { (buffer) in
+    public init(label: StaticString, parent: Activity = .current, options: Options = [], containingBinary dso: UnsafeRawPointer = #dsohandle) {
+        self.reference = label.withUTF8Buffer { (buffer) in
             __loggy_swift_os_activity_create(dso, buffer.baseAddress, parent.reference, options.rawValue)
         }
     }
 
     /// Executes a function `body` within the context of the activity.
-    public func withActive<Return>(execute body: () throws -> Return) rethrows -> Return {
+    public func active<Return>(execute body: () throws -> Return) rethrows -> Return {
         func impl(execute work: () throws -> Return, recover: (Error) throws -> Return) rethrows -> Return {
             var result: Return!
             var error: Error?

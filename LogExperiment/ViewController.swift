@@ -25,10 +25,10 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        Activity("stuff").withActive {
+        Activity(label: "stuff").active {
             Log.processing.show("Doin' some work...")
 
-            Activity("more stuff").withActive {
+            Activity(label: "more stuff").active {
                 Log.processing.error("Things are going bad down here, cap'n!")
             }
         }
