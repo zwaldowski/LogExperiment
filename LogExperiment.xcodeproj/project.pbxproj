@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DB31CCCA1E25D0F200868108 /* DynamicLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB31CCC91E25D0F200868108 /* DynamicLibrary.swift */; };
 		DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4ED7301D81F633000F38A6 /* Loggy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7351D81F633000F38A6 /* Loggy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; };
 		DB4ED7361D81F633000F38A6 /* Loggy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -45,7 +44,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		DB31CCC91E25D0F200868108 /* DynamicLibrary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DynamicLibrary.swift; sourceTree = "<group>"; };
 		DB4ED72E1D81F633000F38A6 /* Loggy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Loggy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB4ED7301D81F633000F38A6 /* Loggy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Loggy.h; sourceTree = "<group>"; };
 		DB4ED7311D81F633000F38A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -83,7 +81,6 @@
 			isa = PBXGroup;
 			children = (
 				DBEE0BF41D8270AF007A562E /* Activity.swift */,
-				DB31CCC91E25D0F200868108 /* DynamicLibrary.swift */,
 				DB4ED7311D81F633000F38A6 /* Info.plist */,
 				DB4ED7301D81F633000F38A6 /* Loggy.h */,
 				DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */,
@@ -242,7 +239,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */,
-				DB31CCCA1E25D0F200868108 /* DynamicLibrary.swift in Sources */,
 				DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
