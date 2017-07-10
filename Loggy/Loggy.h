@@ -1,17 +1,26 @@
 //
 //  Loggy.h
-//  Loggy
 //
 //  Created by Zachary Waldowski on 9/8/16.
-//  Copyright © 2016 Big Nerd Ranch. All rights reserved.
+//  Copyright © 2016-2017 Big Nerd Ranch. Licensed under MIT.
 //
 
-#import <UIKit/UIKit.h>
+@import os.activity;
 
 //! Project version number for Loggy.
-FOUNDATION_EXPORT double LoggyVersionNumber;
+OS_EXPORT double LoggyVersionNumber;
 
 //! Project version string for Loggy.
-FOUNDATION_EXPORT const unsigned char LoggyVersionString[];
+OS_EXPORT const unsigned char LoggyVersionString[];
 
-// In this header, you should import all the public headers of your framework using statements like #import <Loggy/PublicHeader.h>
+static inline OS_ALWAYS_INLINE
+os_activity_t _Nonnull
+_swift_os_activity_none(void) {
+    return OS_ACTIVITY_NONE;
+}
+
+static inline OS_ALWAYS_INLINE
+os_activity_t _Nonnull
+_swift_os_activity_current(void) {
+    return OS_ACTIVITY_CURRENT;
+}

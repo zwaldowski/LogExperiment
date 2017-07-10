@@ -2,28 +2,10 @@
 //  Activity.swift
 //
 //  Created by Zachary Waldowski on 8/21/16.
-//  Copyright © 2016 Big Nerd Ranch. All rights reserved.
+//  Copyright © 2016-2017 Big Nerd Ranch. Licensed under MIT.
 //
 
 import os.activity
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let os_activity_create: @convention(c) (UnsafeRawPointer?, UnsafePointer<Int8>?, AnyObject?, os_activity_flag_t) -> AnyObject = DynamicLibrary.default.symbol(named: "_os_activity_create")
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let os_activity_apply: @convention(c) (AnyObject, (Void) -> ()) -> () = DynamicLibrary.default.symbol(named: "os_activity_apply")
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let os_activity_scope_enter: @convention(c) (AnyObject, UnsafeMutablePointer<os_activity_scope_state_s>) -> () = DynamicLibrary.default.symbol(named: "os_activity_scope_enter")
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let os_activity_scope_leave: @convention(c) (UnsafeMutablePointer<os_activity_scope_state_s>) -> () = DynamicLibrary.default.symbol(named: "os_activity_scope_leave")
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let OS_ACTIVITY_NONE: Unmanaged<AnyObject> = DynamicLibrary.default.symbol(named: "_os_activity_none")
-
-@available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-private let OS_ACTIVITY_CURRENT: Unmanaged<AnyObject> = DynamicLibrary.default.symbol(named: "_os_activity_current")
 
 public struct Activity {
 
@@ -46,40 +28,25 @@ public struct Activity {
         ///
         /// If an activity ID is already present, a new activity will be
         /// returned with the same underlying activity ID.
-        @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
         public static let ifNonePresent = Options(rawValue: OS_ACTIVITY_FLAG_IF_NONE_PRESENT.rawValue)
     }
 
-    private let opaque: AnyObject
-
-    /// Creates an activity.
-    public init(_ description: StaticString, dso: UnsafeRawPointer? = #dsohandle, options: Options = []) {
-        self.opaque = description.withUTF8Buffer { (buffer: UnsafeBufferPointer<UInt8>) -> AnyObject in
-            assert(OS_ACTIVITY_OBJECT_API != 0)
-
-            let string = UnsafeRawPointer(buffer.baseAddress)?.assumingMemoryBound(to: Int8.self)
-            let flags = os_activity_flag_t(rawValue: options.rawValue)
-            return os_activity_create(dso, string, Activity.current.opaque, flags)
-        }
-    }
-
-    private func withActive(execute body: (Void) -> ()) {
-        assert(OS_ACTIVITY_OBJECT_API != 0)
-        os_activity_apply(opaque, body)
-    }
+    private let reference: os_activity_t
 
     /// Executes a function body within the context of the activity.
     public func withActive<Return>(execute body: () throws -> Return) rethrows -> Return {
         func impl(execute work: () throws -> Return, recover: (Error) throws -> Return) rethrows -> Return {
-            var result: Return?
+            var result: Return!
             var error: Error?
-            withActive {
+
+            os_activity_apply(reference) {
                 do {
                     result = try work()
                 } catch let e {
                     error = e
                 }
             }
+
             if let e = error {
                 return try recover(e)
             } else {
@@ -99,7 +66,6 @@ public struct Activity {
 
         /// Pops activity state to `self`.
         public mutating func leave() {
-            assert(OS_ACTIVITY_OBJECT_API != 0)
             os_activity_scope_leave(&state)
         }
     }
@@ -113,41 +79,38 @@ public struct Activity {
     ///    ... do some work ...
     ///
     public func enter() -> Scope {
-        assert(OS_ACTIVITY_OBJECT_API != 0)
-
         var scope = Scope()
-        os_activity_scope_enter(opaque, &scope.state)
+        os_activity_scope_enter(reference, &scope.state)
         return scope
     }
 
     /// Creates an activity.
-    @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
-    public init(_ description: StaticString, dso: UnsafeRawPointer? = #dsohandle, parent: Activity, options: Options = []) {
-        self.opaque = description.withUTF8Buffer { (buffer: UnsafeBufferPointer<UInt8>) -> AnyObject in
-            let string = UnsafeRawPointer(buffer.baseAddress)?.assumingMemoryBound(to: Int8.self)
+    public init(_ description: StaticString, parent: Activity = .current, options: Options = [], dso: UnsafeRawPointer = #dsohandle) {
+        self.reference = description.withUTF8Buffer { (buffer: UnsafeBufferPointer<UInt8>) -> os_activity_t in
+            let dso = UnsafeMutableRawPointer(mutating: dso)
+            let string = UnsafeRawPointer(buffer.baseAddress)!.assumingMemoryBound(to: Int8.self)
             let flags = os_activity_flag_t(rawValue: options.rawValue)
-            return os_activity_create(dso, string, parent.opaque, flags)
+
+            return _os_activity_create(dso, string, parent.reference, flags)
         }
     }
 
-    private init(_ opaque: AnyObject) {
-        self.opaque = opaque
+    private init(_ opaque: OS_os_activity) {
+        self.reference = opaque
     }
 
     /// An activity with no traits; as a parent, it is equivalent to a
     /// detached activity.
-    @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
     public static var none: Activity {
-        return Activity(OS_ACTIVITY_NONE.takeUnretainedValue())
+        return Activity(_swift_os_activity_none())
     }
 
     /// The running activity.
     ///
     /// As a parent, the new activity is linked to the current activity, if one
     /// is present. If no activity is present, it behaves the same as `.none`.
-    @available(iOS 10.0, macOS 10.12, watchOS 3.0, tvOS 10.0, *)
     public static var current: Activity {
-        return Activity(OS_ACTIVITY_CURRENT.takeUnretainedValue())
+        return Activity(_swift_os_activity_current())
     }
 
     /// Label an activity auto-generated by UI with a name that is useful for
