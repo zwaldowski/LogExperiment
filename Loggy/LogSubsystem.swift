@@ -401,7 +401,10 @@ extension LogSubsystem {
     
     /// By default, the description of `Self`.
     public static var name: String {
-        return String(reflecting: self)
+        let name = String(reflecting: self)
+        let startWithModule = name.range(of: ".")?.upperBound ?? name.startIndex
+        let endWithoutExtraneousName = name.range(of: ".", options: .backwards, range: startWithModule ..< name.endIndex)?.lowerBound ?? name.endIndex
+        return name[name.startIndex ..< endWithoutExtraneousName]
     }
     
     /// By default, the description of `self`.
