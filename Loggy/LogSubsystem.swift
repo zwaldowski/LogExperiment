@@ -69,6 +69,13 @@ extension String {
 /// The logging namespace. All methods record to the Apple Unified Logging
 /// System.
 ///
+/// Use it when the additional context of a subsystem wouldn't be useful, or
+/// when replacing legacy logging mechanisms.
+///
+///     Log.show("Hello, world!")
+///     Log.debug("Logged in with id %@", id)
+///     Log.assert(!frame.isEmpty, "You messed it up!)
+///
 /// - important: Log message lines greater than the system’s maximum message
 ///   length are truncated. Complete messages are visible when using the `log`
 ///   tool to view a live stream of activity.
