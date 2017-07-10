@@ -6,6 +6,7 @@
 //
 
 @import os.activity;
+@import os.log;
 
 //! Project version number for Loggy.
 OS_EXPORT double LoggyVersionNumber;
@@ -24,3 +25,8 @@ os_activity_t _Nonnull
 _swift_os_activity_current(void) {
     return OS_ACTIVITY_CURRENT;
 }
+
+extern const void * _Nullable _swift_os_log_return_address(void);
+
+extern void _swift_os_log(const void * _Nullable dso, const void * _Nullable retaddr, os_log_t _Nonnull oslog, os_log_type_t type, const uint8_t * _Nullable format, va_list args);
+
