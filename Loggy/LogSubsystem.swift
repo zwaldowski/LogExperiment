@@ -47,7 +47,7 @@ import Foundation
 ///     // Logs "(21, 30)"
 ///
 /// - see: `CustomStringConvertible`
-protocol CustomLogStringConvertible {
+public protocol CustomLogStringConvertible {
     /// A programmer's representation of `self`. The returned value is printed
     /// to the console log.
     var logDescription: String { get }
