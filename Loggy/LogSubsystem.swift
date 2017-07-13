@@ -86,10 +86,12 @@ extension String {
 /// - https://developer.apple.com/videos/play/wwdc2016/721
 public enum Log {
 
-    fileprivate static func show(_ message: StaticString, type: OSLogType, subsystem: String?, category: String?, into mirror: LogMirror?, containingBinary dso: UnsafeRawPointer, _ arguments: [Any]) {
+    fileprivate static func show(_ message: StaticString, type: OSLogType, isEnabled enabled: Bool = true, subsystem: String? = nil, category: String? = nil, into mirror: LogMirror? = nil, containingBinary dso: UnsafeRawPointer, arguments: [Any]) {
         // The system does bookkeeping of OSLog instances automatically.
         let log: OSLog
-        if let subsystem = subsystem, let category = category {
+        if !enabled {
+            log = .disabled
+        } else if let subsystem = subsystem, let category = category {
             log = OSLog(subsystem: subsystem, category: category)
         } else {
             log = .default
@@ -146,7 +148,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func show(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .default, subsystem: nil, category: nil, into: nil, containingBinary: dso, arguments)
+        show(message, type: .default, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the debug level.
@@ -163,7 +165,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func debug(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .debug, subsystem: nil, category: nil, into: nil, containingBinary: dso, arguments)
+        show(message, type: .debug, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the info level.
@@ -180,7 +182,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func info(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .info, subsystem: nil, category: nil, into: nil, containingBinary: dso, arguments)
+        show(message, type: .info, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the error level.
@@ -195,7 +197,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func error(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .error, subsystem: nil, category: nil, into: nil, containingBinary: dso, arguments)
+        show(message, type: .error, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the fault level.
@@ -210,7 +212,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func fault(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .default, subsystem: nil, category: nil, into: nil, containingBinary: dso, arguments)
+        show(message, type: .default, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the debug level with the current function name.
@@ -225,7 +227,7 @@ public enum Log {
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
     public static func trace(function: StaticString = #function, containingBinary dso: UnsafeRawPointer = #dsohandle) {
-        show(function, type: .debug, subsystem: nil, category: nil, into: nil, containingBinary: dso, [])
+        show(function, type: .debug, containingBinary: dso, arguments: [])
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -246,9 +248,9 @@ public enum Log {
     ///   debugging information.
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
-    public static func assertionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, _ arguments: [Any]) {
+    public static func assertionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) {
         let mirror = AssertionFailureMirror(file: file, line: line)
-        show(message, type: .info, subsystem: nil, category: nil, into: mirror, containingBinary: dso, arguments)
+        show(message, type: .info, into: mirror, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -273,7 +275,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func assertionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        assertionFailure(message, file: file, line: line, containingBinary: dso, arguments)
+        assertionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
     /// Performs a sanity check. If it fails, a log message is issued at the
@@ -301,7 +303,7 @@ public enum Log {
     @_transparent
     public static func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         guard !condition() else { return }
-        assertionFailure(message(), file: file, line: line, containingBinary: dso, arguments)
+        assertionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the error level indicating that a precondition
@@ -318,9 +320,9 @@ public enum Log {
     ///   debugging information.
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
-    public static func preconditionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, _ arguments: [Any]) -> Never {
+    public static func preconditionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) -> Never {
         let mirror = PreconditionFailureMirror(file: file, line: line)
-        show(message, type: .error, subsystem: nil, category: nil, into: mirror, containingBinary: dso, arguments)
+        show(message, type: .error, into: mirror, containingBinary: dso, arguments: arguments)
         preconditionFailure("can't get here")
     }
 
@@ -343,7 +345,7 @@ public enum Log {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public static func preconditionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) -> Never {
-        preconditionFailure(message, file: file, line: line, containingBinary: dso, arguments)
+        preconditionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
     /// Checks a necessary condition for making forward progress. If it fails,
@@ -368,7 +370,7 @@ public enum Log {
     @_transparent
     public static func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         guard !condition() else { return }
-        preconditionFailure(message(), file: file, line: line, containingBinary: dso, arguments)
+        preconditionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
 }
@@ -402,6 +404,9 @@ public protocol LogSubsystem {
 
     /// A stage or grouping for a subsystem, such as "setup" or "teardown".
     var categoryName: String { get }
+
+    /// Whether to print any messages in this subsystem and category.
+    var isEnabled: Bool { get }
 }
 
 extension LogSubsystem {
@@ -419,6 +424,12 @@ extension LogSubsystem {
         return String(describing: self)
     }
 
+    /// By default, all subsystems are enabled at the code level, but some
+    /// levels may be disabled at runtime.
+    public var isEnabled: Bool {
+        return true
+    }
+
     /// Issues a log message at the default level.
     ///
     /// Default-level messages are initially stored in memory and moved to the
@@ -433,7 +444,8 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func show(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        Log.show(message, type: .default, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
+        guard isEnabled else { return }
+        Log.show(message, type: .default, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the debug level.
@@ -450,7 +462,8 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func debug(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        Log.show(message, type: .debug, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
+        guard isEnabled else { return }
+        Log.show(message, type: .debug, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the info level.
@@ -467,7 +480,8 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func info(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        Log.show(message, type: .info, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
+        guard isEnabled else { return }
+        Log.show(message, type: .info, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the error level.
@@ -482,7 +496,8 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func error(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        Log.show(message, type: .error, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
+        guard isEnabled else { return }
+        Log.show(message, type: .error, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the fault level.
@@ -497,7 +512,8 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func fault(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        Log.show(message, type: .fault, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, arguments)
+        guard isEnabled else { return }
+        Log.show(message, type: .fault, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the debug level with the current function name.
@@ -512,7 +528,8 @@ extension LogSubsystem {
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
     public func trace(function: StaticString = #function, containingBinary dso: UnsafeRawPointer = #dsohandle) {
-        Log.show(function, type: .debug, subsystem: Self.name, category: categoryName, into: nil, containingBinary: dso, [])
+        guard isEnabled else { return }
+        Log.show(function, type: .debug, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: [])
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -533,9 +550,9 @@ extension LogSubsystem {
     ///   debugging information.
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
-    public func assertionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, _ arguments: [Any]) {
+    public func assertionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) {
         let mirror = AssertionFailureMirror(file: file, line: line)
-        Log.show(message, type: .error, subsystem: Self.name, category: categoryName, into: mirror, containingBinary: dso, arguments)
+        Log.show(message, type: .error, isEnabled: isEnabled, subsystem: Self.name, category: categoryName, into: mirror, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -560,7 +577,7 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func assertionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        assertionFailure(message, file: file, line: line, containingBinary: dso, arguments)
+        assertionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
     /// Performs a sanity check. If it fails, a log message is issued at the
@@ -588,7 +605,7 @@ extension LogSubsystem {
     @_transparent
     public func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         guard !condition() else { return }
-        assertionFailure(message(), file: file, line: line, containingBinary: dso, arguments)
+        assertionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
     /// Issues a log message at the error level indicating that a precondition
@@ -605,9 +622,9 @@ extension LogSubsystem {
     ///   debugging information.
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
-    public func preconditionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, _ arguments: [Any]) -> Never {
+    public func preconditionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) -> Never {
         let mirror = PreconditionFailureMirror(file: file, line: line)
-        Log.show(message, type: .fault, subsystem: Self.name, category: categoryName, into: mirror, containingBinary: dso, arguments)
+        Log.show(message, type: .fault, isEnabled: isEnabled, subsystem: Self.name, category: categoryName, into: mirror, containingBinary: dso, arguments: arguments)
         preconditionFailure("can't get here")
     }
 
@@ -630,7 +647,7 @@ extension LogSubsystem {
     /// - parameter arguments: Zero or more items to print corresponding to
     ///   the format `message`.
     public func preconditionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) -> Never {
-        preconditionFailure(message, file: file, line: line, containingBinary: dso, arguments)
+        preconditionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
     /// Checks a necessary condition for making forward progress. If it fails,
@@ -655,7 +672,7 @@ extension LogSubsystem {
     @_transparent
     public func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
         guard !condition() else { return }
-        preconditionFailure(message(), file: file, line: line, containingBinary: dso, arguments)
+        preconditionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
     }
 
 }
