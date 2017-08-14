@@ -61,7 +61,7 @@ public struct Activity {
     ///   activity was created.
     public init(label: StaticString, parent: Activity = .current, options: Options = [], containingBinary dso: UnsafeRawPointer = #dsohandle) {
         self.reference = label.withUTF8Buffer { (buffer) in
-            __loggy_swift_os_activity_create(dso, buffer.baseAddress, parent.reference, options.rawValue)
+            __loggy_os_activity_create(dso, buffer.baseAddress, parent.reference, options.rawValue)
         }
     }
 
@@ -138,14 +138,14 @@ extension Activity {
     /// Where the underlying name will be "gesture:" or "menuSelect:".
     public static func labelUserAction(_ description: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle) {
         description.withUTF8Buffer { (buffer) in
-            __loggy_swift_os_activity_label_useraction(dso, buffer.baseAddress)
+            __loggy_os_activity_label_useraction(dso, buffer.baseAddress)
         }
     }
 
     /// An activity with no traits; as a parent, it is equivalent to a
     /// detached activity.
     public static var none: Activity {
-        return Activity(__loggy_swift_os_activity_none())
+        return Activity(__loggy_os_activity_none())
     }
 
     /// The running activity.
@@ -153,7 +153,7 @@ extension Activity {
     /// As a parent, the new activity is linked to the current activity, if one
     /// is present. If no activity is present, it behaves the same as `.none`.
     public static var current: Activity {
-        return Activity(__loggy_swift_os_activity_current())
+        return Activity(__loggy_os_activity_current())
     }
 
 }

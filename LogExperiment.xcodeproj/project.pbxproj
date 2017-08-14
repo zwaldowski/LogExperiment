@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DB40966F1F3C2B40004F8984 /* os_activity_shims.h in Headers */ = {isa = PBXBuildFile; fileRef = DB40966E1F3C2B40004F8984 /* os_activity_shims.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4ED7301D81F633000F38A6 /* Loggy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7351D81F633000F38A6 /* Loggy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; };
 		DB4ED7361D81F633000F38A6 /* Loggy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -44,6 +45,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DB40966E1F3C2B40004F8984 /* os_activity_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_activity_shims.h; sourceTree = "<group>"; };
 		DB4ED72E1D81F633000F38A6 /* Loggy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Loggy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB4ED7301D81F633000F38A6 /* Loggy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Loggy.h; sourceTree = "<group>"; };
 		DB4ED7311D81F633000F38A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -80,10 +82,11 @@
 		DB4ED72F1D81F633000F38A6 /* Loggy */ = {
 			isa = PBXGroup;
 			children = (
-				DBEE0BF41D8270AF007A562E /* Activity.swift */,
-				DB4ED7311D81F633000F38A6 /* Info.plist */,
 				DB4ED7301D81F633000F38A6 /* Loggy.h */,
+				DBEE0BF41D8270AF007A562E /* Activity.swift */,
 				DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */,
+				DB40966E1F3C2B40004F8984 /* os_activity_shims.h */,
+				DB4ED7311D81F633000F38A6 /* Info.plist */,
 			);
 			path = Loggy;
 			sourceTree = "<group>";
@@ -127,6 +130,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */,
+				DB40966F1F3C2B40004F8984 /* os_activity_shims.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
