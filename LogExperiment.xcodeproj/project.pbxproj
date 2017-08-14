@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DB40966C1F3C0761004F8984 /* os_log_shims.h in Headers */ = {isa = PBXBuildFile; fileRef = DB40966B1F3C0761004F8984 /* os_log_shims.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB40966F1F3C2B40004F8984 /* os_activity_shims.h in Headers */ = {isa = PBXBuildFile; fileRef = DB40966E1F3C2B40004F8984 /* os_activity_shims.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4ED7301D81F633000F38A6 /* Loggy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7351D81F633000F38A6 /* Loggy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; };
@@ -17,6 +18,9 @@
 		DB8874061D806685008FF01B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DB8874051D806685008FF01B /* Assets.xcassets */; };
 		DB8874091D806685008FF01B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB8874071D806685008FF01B /* LaunchScreen.storyboard */; };
 		DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */; };
+		DBC7B4DC1F3B648B00FADEC6 /* LogStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */; };
+		DBC7B4E21F3B675B00FADEC6 /* os_log_shims.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC7B4DF1F3B675B00FADEC6 /* os_log_shims.m */; };
+		DBC7B4E51F3B7BCB00FADEC6 /* os_log_shims_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DBC7B4E31F3B676400FADEC6 /* os_log_shims_private.h */; };
 		DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBEE0BF41D8270AF007A562E /* Activity.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +49,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DB40966B1F3C0761004F8984 /* os_log_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_log_shims.h; sourceTree = "<group>"; };
 		DB40966E1F3C2B40004F8984 /* os_activity_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_activity_shims.h; sourceTree = "<group>"; };
 		DB4ED72E1D81F633000F38A6 /* Loggy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Loggy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB4ED7301D81F633000F38A6 /* Loggy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Loggy.h; sourceTree = "<group>"; };
@@ -57,6 +62,9 @@
 		DB8874081D806685008FF01B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		DB88740A1D806685008FF01B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSubsystem.swift; sourceTree = "<group>"; };
+		DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStatement.swift; sourceTree = "<group>"; };
+		DBC7B4DF1F3B675B00FADEC6 /* os_log_shims.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = os_log_shims.m; sourceTree = "<group>"; };
+		DBC7B4E31F3B676400FADEC6 /* os_log_shims_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_log_shims_private.h; sourceTree = "<group>"; };
 		DBEE0BF41D8270AF007A562E /* Activity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -84,8 +92,12 @@
 			children = (
 				DB4ED7301D81F633000F38A6 /* Loggy.h */,
 				DBEE0BF41D8270AF007A562E /* Activity.swift */,
+				DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */,
 				DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */,
 				DB40966E1F3C2B40004F8984 /* os_activity_shims.h */,
+				DB40966B1F3C0761004F8984 /* os_log_shims.h */,
+				DBC7B4E31F3B676400FADEC6 /* os_log_shims_private.h */,
+				DBC7B4DF1F3B675B00FADEC6 /* os_log_shims.m */,
 				DB4ED7311D81F633000F38A6 /* Info.plist */,
 			);
 			path = Loggy;
@@ -130,7 +142,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */,
+				DB40966C1F3C0761004F8984 /* os_log_shims.h in Headers */,
 				DB40966F1F3C2B40004F8984 /* os_activity_shims.h in Headers */,
+				DBC7B4E51F3B7BCB00FADEC6 /* os_log_shims_private.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,6 +256,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DBC7B4E21F3B675B00FADEC6 /* os_log_shims.m in Sources */,
+				DBC7B4DC1F3B648B00FADEC6 /* LogStatement.swift in Sources */,
 				DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */,
 				DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */,
 			);
@@ -291,6 +307,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_IDENTITY = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
@@ -318,6 +335,7 @@
 			buildSettings = {
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_IDENTITY = "";
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;

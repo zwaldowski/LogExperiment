@@ -8,20 +8,23 @@
 import os.log
 import Foundation
 
+// Lots of docs
+// swiftlint:disable file_length
+
 // MARK: - Improved logging primitives
 
 /// A type with a customized log representation.
 ///
-/// Types that conform to the `CustomLogStringConvertible` protocol can provide
+/// Types that conform to the `CustomLogConvertible` protocol can provide
 /// their own representation to be used when logging using a `LogSubsystem`.
 ///
-/// Accessing a type's `logValue` property directly is discouraged.
+/// Accessing a type's `logStatement` property directly is discouraged.
 ///
-/// Conforming to the CustomLogStringConvertible Protocol
-/// =====================================================
+/// Conforming to the CustomLogConvertible Protocol
+/// ===============================================
 ///
-/// Add `CustomLogStringConvertible` conformance to your custom types by defining
-/// a `logValue` property.
+/// Add `CustomLogConvertible` conformance to your custom types by defining
+/// a `logStatement` property.
 ///
 /// For example, this custom `Point` struct uses the default representation
 /// supplied by the standard library:
@@ -31,39 +34,26 @@ import Foundation
 ///     }
 ///
 ///     let p = Point(x: 21, y: 30)
-///     Log.show("%@", p)
-///     // Logs "Point(x: 21, y: 30)"
+///     Log.show("Point of order: \(p)")
+///     // Logs "Point of order: <redacted>" to Console
 ///
-/// After implementing `CustomLogStringConvertible` conformance, the `Point`
+/// After implementing `CustomLogConvertible` conformance, the `Point`
 /// type provides a custom representation:
 ///
 ///     extension Point: CustomLogConvertible {
-///         var logDescription: String {
+///         var logStatement: LogStatement {
 ///             return "(\(x), \(y))"
 ///         }
 ///     }
 ///
-///     Log.show("%@", p)
-///     // Logs "(21, 30)"
+///     Log.show("Point of order: \(p)")
+///     // Logs "Point of order: (21, 30)" to Console
 ///
 /// - see: `CustomStringConvertible`
-public protocol CustomLogStringConvertible {
+public protocol CustomLogConvertible {
     /// A programmer's representation of `self`. The returned value is printed
     /// to the console log.
-    var logDescription: String { get }
-}
-
-extension String {
-
-    /// Creates a console log representing the given `value`.
-    public init<Subject>(logging instance: Subject) {
-        if let subject = instance as? CustomLogStringConvertible {
-            self = String(describing: subject.logDescription)
-        } else {
-            self = String(describing: instance)
-        }
-    }
-
+    var logStatement: LogStatement { get }
 }
 
 /// The logging namespace. All methods record to the Apple Unified Logging
@@ -73,8 +63,8 @@ extension String {
 /// when replacing legacy logging mechanisms.
 ///
 ///     Log.show("Hello, world!")
-///     Log.debug("Logged in with id %@", id)
-///     Log.assert(!frame.isEmpty, "You messed it up!)
+///     Log.debug("Logged in with \(id)")
+///     Log.assert(!frame.isEmpty, "You messed it up!")
 ///
 /// - important: Log message lines greater than the system’s maximum message
 ///   length are truncated. Complete messages are visible when using the `log`
@@ -86,51 +76,57 @@ extension String {
 /// - https://developer.apple.com/videos/play/wwdc2016/721
 public enum Log {
 
-    fileprivate static func show(_ message: StaticString, type: OSLogType, isEnabled enabled: Bool = true, subsystem: String? = nil, category: String? = nil, into mirror: LogMirror? = nil, containingBinary dso: UnsafeRawPointer, arguments: [Any]) {
+    fileprivate static func show(_ makeStatement: () -> LogStatement, for type: OSLogType, subsystem: String? = nil, category: String? = nil, into mirror: LogMirror? = nil, fromContainingBinary dso: UnsafeRawPointer) {
         // The system does bookkeeping of OSLog instances automatically.
         let log: OSLog
-        if !enabled {
-            log = .disabled
-        } else if let subsystem = subsystem, let category = category {
+        if let subsystem = subsystem, let category = category {
             log = OSLog(subsystem: subsystem, category: category)
         } else {
             log = .default
         }
 
-        // If neither log wants the message, do no further work.
+        // If neither log wants the message, do not produce the log statement.
         let nativeEnabled = log.isEnabled(type: type)
 
         let mirror = mirror ?? Log.mirror
-        let mirrorEnabled = mirror?.isEnabled(type: type) ?? false
+        let mirrorEnabled = mirror?.isEnabled(for: type) ?? false
 
         guard nativeEnabled || mirrorEnabled else { return }
 
-        // Convert into va_list form, potentially using CustomLogStringConvertible.
-        let cArguments = arguments.map { (argument) -> CVarArg in
-            switch argument {
-            case let value as CustomLogStringConvertible:
-                return value.logDescription as NSString
-            case let value as CVarArg:
-                return value
-            default:
-                return String(describing: argument) as NSString
-            }
-        }
+        // Producing the LogStatement may set the errno, f.ex for floating point.
+        let retaddr = LogStatementPacker.currentReturnAddress
+        let savedErrno = errno
+        let statement = makeStatement()
 
         // Send to os_log.
         if nativeEnabled {
-            let returnAddress = _swift_os_log_return_address()
-
-            message.withUTF8Buffer { (format: UnsafeBufferPointer<UInt8>) in
-                withVaList(cArguments) { (valist) in
-                    _swift_os_log(dso, returnAddress, log, type, format.baseAddress, valist)
+            LogStatementPacker.send(to: log, for: type, fromContainingBinary: dso, returnAddress: retaddr, errno: savedErrno) { (packer) -> String in
+                var format = ""
+                for segment in statement.segments {
+                    switch segment {
+                    case .literal(let string):
+                        format.append(string)
+                    case .signed(let int):
+                        format.append("%zd")
+                        packer.add(int, options: [])
+                    case .unsigned(let int):
+                        format.append("%zu")
+                        packer.add(int, options: [])
+                    case .float(let double, let precision):
+                        format.append("%.*g")
+                        packer.add(double, precision: precision, options: [])
+                    case .object(let object):
+                        format.append("%@")
+                        packer.add(object, options: [])
+                    }
                 }
+                return format
             }
         }
 
         // Send to mirror.
-        if mirrorEnabled {
-            mirror?.show(message, type: type, subsystem: subsystem, category: category, containingBinary: dso, cArguments)
+        if mirrorEnabled, let mirror = mirror {
+            mirror.show(String(describing: statement), for: type, subsystem: subsystem, category: category)
         }
     }
 
@@ -140,15 +136,12 @@ public enum Log {
     /// data store. Use this method to capture information about things that
     /// might result in a failure.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func show(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .default, containingBinary: dso, arguments: arguments)
+    public static func show(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        show(statement, for: .default, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the debug level.
@@ -157,15 +150,12 @@ public enum Log {
     /// enabled at runtime. They are intended for use in a development
     /// environment and not in shipping software.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func debug(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .debug, containingBinary: dso, arguments: arguments)
+    public static func debug(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        show(statement, for: .debug, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the info level.
@@ -174,45 +164,36 @@ public enum Log {
     /// the data store until faults or, optionally, errors occur. Use this
     /// method to capture information that may be helpful, but isn’t essential.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func info(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .info, containingBinary: dso, arguments: arguments)
+    public static func info(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        show(statement, for: .info, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the error level.
     ///
     /// Error-level messages are always saved in the data store.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func error(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .error, containingBinary: dso, arguments: arguments)
+    public static func error(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        show(statement, for: .error, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the fault level.
     ///
     /// Fault-level messages are always saved in the data store.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func fault(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        show(message, type: .default, containingBinary: dso, arguments: arguments)
+    public static func fault(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        show(statement, for: .default, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the debug level with the current function name.
@@ -226,8 +207,8 @@ public enum Log {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    public static func trace(function: StaticString = #function, containingBinary dso: UnsafeRawPointer = #dsohandle) {
-        show(function, type: .debug, containingBinary: dso, arguments: [])
+    public static func trace(function: StaticString = #function, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        debug("\(function)", fromContainingBinary: dso)
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -238,19 +219,16 @@ public enum Log {
     /// configuration), program execution will be stopped in a debuggable state.
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build.
     /// - parameter line: The line number to print along with `message` in a
     ///   playground or `-Onone` build.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func assertionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) {
+    public static func assertionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) {
         let mirror = AssertionFailureMirror(file: file, line: line)
-        show(message, type: .info, into: mirror, containingBinary: dso, arguments: arguments)
+        show(statement, for: .info, into: mirror, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -261,8 +239,7 @@ public enum Log {
     /// configuration), program execution will be stopped in a debuggable state.
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failure
     ///   was called.
@@ -272,10 +249,8 @@ public enum Log {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   assertion failure was called.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func assertionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        assertionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
+    public static func assertionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        assertionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Performs a sanity check. If it fails, a log message is issued at the
@@ -288,8 +263,7 @@ public enum Log {
     /// builds, see `precondition`.
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failed.
     /// - parameter line: The line number to print along with `message` in a
@@ -298,12 +272,10 @@ public enum Log {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   assertion failed.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    @_transparent
-    public static func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
+    @_transparent // makes failures use the DEBUG of calling code
+    public static func assert(_ condition: @autoclosure() -> Bool, _ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         guard !condition() else { return }
-        assertionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
+        assertionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the error level indicating that a precondition
@@ -312,18 +284,15 @@ public enum Log {
     /// Use this method to stop the program when control flow can only reach the
     /// call if your API was improperly used. Program execution will be stopped.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message`.
     /// - parameter line: The line number to print along with `message`.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func preconditionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) -> Never {
+    public static func preconditionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) -> Never {
         let mirror = PreconditionFailureMirror(file: file, line: line)
-        show(message, type: .error, into: mirror, containingBinary: dso, arguments: arguments)
-        preconditionFailure("can't get here")
+        show(statement, for: .error, into: mirror, fromContainingBinary: dso)
+        Swift.preconditionFailure("can't get here")
     }
 
     /// Issues a log message at the error level indicating that a precondition
@@ -332,8 +301,7 @@ public enum Log {
     /// Use this method to stop the program when control flow can only reach the
     /// call if your API was improperly used. Program execution will be stopped.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failure occurred.
     /// - parameter line: The line number to print along with `message` in a
@@ -342,10 +310,8 @@ public enum Log {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   precondition failure occurred.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public static func preconditionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) -> Never {
-        preconditionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
+    public static func preconditionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) -> Never {
+        preconditionFailure(statement(), file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Checks a necessary condition for making forward progress. If it fails,
@@ -356,8 +322,7 @@ public enum Log {
     /// saved in the data store. Program execution will be stopped.
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failed.
     /// - parameter line: The line number to print along with `message`. The
@@ -365,12 +330,10 @@ public enum Log {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   precondition failed.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    @_transparent
-    public static func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
+    @_transparent // makes failures use the DEBUG of calling code
+    public static func precondition(_ condition: @autoclosure() -> Bool, _ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         guard !condition() else { return }
-        preconditionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
+        preconditionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
 }
@@ -394,7 +357,7 @@ public enum Log {
 ///         }
 ///
 ///         func requestFailed(error: Error) {
-///             Log.network.error("Could not log in: %@", error)
+///             Log.network.error("Could not log in: \(error)")
 ///         }
 ///     }
 ///
@@ -405,8 +368,8 @@ public protocol LogSubsystem {
     /// A stage or grouping for a subsystem, such as "setup" or "teardown".
     var categoryName: String { get }
 
-    /// Whether to print any messages in this subsystem and category.
-    var isEnabled: Bool { get }
+    /// Whether to print messages in this category.
+    func isEnabled(for type: OSLogType) -> Bool
 }
 
 extension LogSubsystem {
@@ -423,7 +386,7 @@ extension LogSubsystem {
 
     /// By default, all subsystems are enabled at the code level, but some
     /// levels may be disabled at runtime.
-    public var isEnabled: Bool {
+    public func isEnabled(for type: OSLogType) -> Bool {
         return true
     }
 
@@ -433,16 +396,13 @@ extension LogSubsystem {
     /// data store. Use this method to capture information about things that
     /// might result in a failure.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func show(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        guard isEnabled else { return }
-        Log.show(message, type: .default, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
+    public func show(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        guard isEnabled(for: .default) else { return }
+        Log.show(statement, for: .default, subsystem: Self.name, category: categoryName, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the debug level.
@@ -451,16 +411,13 @@ extension LogSubsystem {
     /// enabled at runtime. They are intended for use in a development
     /// environment and not in shipping software.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func debug(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        guard isEnabled else { return }
-        Log.show(message, type: .debug, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
+    public func debug(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        guard isEnabled(for: .debug) else { return }
+        Log.show(statement, for: .debug, subsystem: Self.name, category: categoryName, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the info level.
@@ -469,48 +426,39 @@ extension LogSubsystem {
     /// the data store until faults or, optionally, errors occur. Use this
     /// method to capture information that may be helpful, but isn’t essential.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func info(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        guard isEnabled else { return }
-        Log.show(message, type: .info, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
+    public func info(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        guard isEnabled(for: .info) else { return }
+        Log.show(statement, for: .info, subsystem: Self.name, category: categoryName, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the error level.
     ///
     /// Error-level messages are always saved in the data store.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func error(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        guard isEnabled else { return }
-        Log.show(message, type: .error, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
+    public func error(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        guard isEnabled(for: .error) else { return }
+        Log.show(statement, for: .error, subsystem: Self.name, category: categoryName, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the fault level.
     ///
     /// Fault-level messages are always saved in the data store.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func fault(_ message: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        guard isEnabled else { return }
-        Log.show(message, type: .fault, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: arguments)
+    public func fault(_ statement: @autoclosure() -> LogStatement, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        guard isEnabled(for: .fault) else { return }
+        Log.show(statement, for: .fault, subsystem: Self.name, category: categoryName, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the debug level with the current function name.
@@ -524,9 +472,8 @@ extension LogSubsystem {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   log message was sent.
-    public func trace(function: StaticString = #function, containingBinary dso: UnsafeRawPointer = #dsohandle) {
-        guard isEnabled else { return }
-        Log.show(function, type: .debug, subsystem: Self.name, category: categoryName, containingBinary: dso, arguments: [])
+    public func trace(function: StaticString = #function, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        debug("\(function)", fromContainingBinary: dso)
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -537,19 +484,16 @@ extension LogSubsystem {
     /// configuration), program execution will be stopped in a debuggable state.
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build.
     /// - parameter line: The line number to print along with `message` in a
     ///   playground or `-Onone` build.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func assertionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) {
+    public func assertionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) {
         let mirror = AssertionFailureMirror(file: file, line: line)
-        Log.show(message, type: .error, isEnabled: isEnabled, subsystem: Self.name, category: categoryName, into: mirror, containingBinary: dso, arguments: arguments)
+        Log.show(statement, for: .error, subsystem: Self.name, category: categoryName, into: mirror, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the info level indicating that a sanity check
@@ -560,8 +504,7 @@ extension LogSubsystem {
     /// configuration), program execution will be stopped in a debuggable state.
     /// To fail similarly in Release builds, see `preconditionFailure`.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failure
     ///   was called.
@@ -571,10 +514,8 @@ extension LogSubsystem {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   assertion failure was called.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func assertionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
-        assertionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
+    public func assertionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
+        assertionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Performs a sanity check. If it fails, a log message is issued at the
@@ -587,8 +528,7 @@ extension LogSubsystem {
     /// builds, see `precondition`.
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message` in a playground
     ///   or `-Onone` build. The default is the file where the assertion failed.
     /// - parameter line: The line number to print along with `message` in a
@@ -597,12 +537,10 @@ extension LogSubsystem {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   assertion failed.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    @_transparent
-    public func assert(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
+    @_transparent // makes failures use the DEBUG of calling code
+    public func assert(_ condition: @autoclosure() -> Bool, _ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         guard !condition() else { return }
-        assertionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
+        assertionFailure(statement(), file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Issues a log message at the error level indicating that a precondition
@@ -611,18 +549,15 @@ extension LogSubsystem {
     /// Use this method to stop the program when control flow can only reach the
     /// call if your API was improperly used. Program execution will be stopped.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message`.
     /// - parameter line: The line number to print along with `message`.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func preconditionFailure(_ message: StaticString, file: StaticString, line: UInt, containingBinary dso: UnsafeRawPointer, arguments: [Any]) -> Never {
+    public func preconditionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) -> Never {
         let mirror = PreconditionFailureMirror(file: file, line: line)
-        Log.show(message, type: .fault, isEnabled: isEnabled, subsystem: Self.name, category: categoryName, into: mirror, containingBinary: dso, arguments: arguments)
-        preconditionFailure("can't get here")
+        Log.show(statement, for: .fault, subsystem: Self.name, category: categoryName, into: mirror, fromContainingBinary: dso)
+        Swift.preconditionFailure("can't get here")
     }
 
     /// Issues a log message at the error level indicating that a precondition
@@ -631,8 +566,7 @@ extension LogSubsystem {
     /// Use this method to stop the program when control flow can only reach the
     /// call if your API was improperly used. Program execution will be stopped.
     ///
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failure occurred.
     /// - parameter line: The line number to print along with `message` in a
@@ -641,10 +575,8 @@ extension LogSubsystem {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   precondition failure occurred.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    public func preconditionFailure(_ message: StaticString, file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) -> Never {
-        preconditionFailure(message, file: file, line: line, containingBinary: dso, arguments: arguments)
+    public func preconditionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) -> Never {
+        preconditionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Checks a necessary condition for making forward progress. If it fails,
@@ -655,8 +587,7 @@ extension LogSubsystem {
     /// saved in the data store. Program execution will be stopped.
     ///
     /// - parameter condition: The condition to test. It is always evaluated.
-    /// - parameter message: A `printf`-style format string. Log messages are
-    ///   formatted using a variation on the [Cocoa String Format Specifiers](https://developer.apple.com/documentation/os/logging?language=objc#1682416).
+    /// - parameter statement: A string literal with optional interpolation.
     /// - parameter file: The file name to print with `message`. The default is
     ///   the file where the precondition failed.
     /// - parameter line: The line number to print along with `message`. The
@@ -664,12 +595,10 @@ extension LogSubsystem {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information. The default is the module where the
     ///   precondition failed.
-    /// - parameter arguments: Zero or more items to print corresponding to
-    ///   the format `message`.
-    @_transparent
-    public func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> StaticString = "", file: StaticString = #file, line: UInt = #line, containingBinary dso: UnsafeRawPointer = #dsohandle, _ arguments: Any...) {
+    @_transparent // makes failures use the DEBUG of calling code
+    public func precondition(_ condition: @autoclosure () -> Bool, _ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         guard !condition() else { return }
-        preconditionFailure(message(), file: file, line: line, containingBinary: dso, arguments: arguments)
+        preconditionFailure(statement(), file: file, line: line, fromContainingBinary: dso)
     }
 
 }
@@ -682,23 +611,27 @@ extension LogSubsystem {
 public protocol LogMirror {
     /// Return `true` if `show` should be invoked for this mirror. Return
     /// `false` to potentially save resources if the message is to be ignored.
-    func isEnabled(type: OSLogType) -> Bool
+    func isEnabled(for type: OSLogType) -> Bool
 
     /// Record a formatted log `message`. Structural information, such as
     /// `type`, `subsystem`, and `category` are passed to enhance log output.
-    /// `dso` may be passed to dyld to get more debugging info.
-    func show(_ message: String, type: OSLogType, subsystem: String?, category: String?, containingBinary dso: UnsafeRawPointer)
+    func show(_ message: String, for type: OSLogType, subsystem: String?, category: String?)
+}
+
+extension LogMirror {
+
+    /// By default, all subsystems are mirrored.
+    public func isEnabled(for type: OSLogType) -> Bool {
+        return true
+    }
+
 }
 
 private struct AssertionFailureMirror: LogMirror {
     let file: StaticString
     let line: UInt
 
-    func isEnabled(type: OSLogType) -> Bool {
-        return true
-    }
-
-    func show(_ message: String, type: OSLogType, subsystem: String?, category: String?, containingBinary dso: UnsafeRawPointer) {
+    func show(_ message: String, for _: OSLogType, subsystem _: String?, category _: String?) {
         assertionFailure(message, file: file, line: line)
     }
 }
@@ -707,26 +640,11 @@ private struct PreconditionFailureMirror: LogMirror {
     let file: StaticString
     let line: UInt
 
-    func isEnabled(type: OSLogType) -> Bool {
-        return true
-    }
-
-    func show(_ message: String, type: OSLogType, subsystem: String?, category: String?, containingBinary dso: UnsafeRawPointer) {
+    func show(_ message: String, for _: OSLogType, subsystem _: String?, category _: String?) {
         preconditionFailure(message, file: file, line: line)
     }
 }
 
-private let osLogSpecifiers = try! NSRegularExpression(pattern: "%\\{+?\\}(.{1})")
-
-private extension LogMirror {
-
-    func show(_ message: StaticString, type: OSLogType, subsystem: String?, category: String?, containingBinary dso: UnsafeRawPointer, _ arguments: [CVarArg]) {
-        let message = String(describing: message)
-        let format = osLogSpecifiers.stringByReplacingMatches(in: message, range: NSRange(0 ..< message.utf16.count), withTemplate: "%$1")
-        show(format, type: type, subsystem: subsystem, category: category, containingBinary: arguments)
-    }
-
-}
 
 extension Log {
 
@@ -750,18 +668,4 @@ extension Log {
 
 }
 
-extension LogMirror {
-
-    /// Returns the URL for the executable containing the `address`.
-    public func urlContaining(_ address: UnsafeRawPointer?) -> URL? {
-        var info = Dl_info()
-        guard dladdr(address, &info) != 0, let fname = info.dli_fname else { return nil }
-        return URL(fileURLWithPath: String(cString: fname))
-    }
-
-    /// Returns the name of the executable containing the `address`.
-    public func executableContaining(_ address: UnsafeRawPointer?) -> String? {
-        return urlContaining(address)?.deletingPathExtension().lastPathComponent
-    }
-
-}
+// swiftlint:enable file_length
