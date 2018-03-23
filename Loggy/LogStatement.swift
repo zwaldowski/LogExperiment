@@ -9,22 +9,6 @@
 import Foundation
 import CoreGraphics
 
-// TODO: enable custom formatting looking like:
-//
-//    enum LogVisibility { case `public`, `private` }
-//    format<T>(_ expression: T, for visibility: LogVisibility)
-//
-//    enum LogIntegerFormat { case time, errno, ipv6 }
-//    Integer.format(for visibility: LogVisibility? = nil, as format: LogIntegerFormat? = nil, precision: Int? = nil)
-//
-//    enum LogFloatingPointFormat { case compact(uppercase: Bool) }
-//    FloatingPoint.format(for visibility: LogVisibility? = nil, as format: LogFloatingPointFormat? = nil, precision: Int? = nil)
-//
-//    enum LogDataFormat { case timeval, timespec, uuid, socket, ipv6 }
-//    Data.format(for visibility: LogVisibility? = nil, as format: LogFloatingPointFormat? = nil, precision: Int? = nil)
-//    UUID.format(for visibility: LogVisibility? = nil)
-//    etc.
-
 /// A string literal that can be formatted into a log stream.
 ///
 /// You generally don't need to create this on your own.
