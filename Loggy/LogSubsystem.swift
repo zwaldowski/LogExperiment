@@ -226,31 +226,9 @@ public enum Log {
     ///   playground or `-Onone` build.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    public static func assertionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) {
+    public static func assertionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         let mirror = AssertionFailureMirror(file: file, line: line)
         show(statement, for: .info, into: mirror, fromContainingBinary: dso)
-    }
-
-    /// Issues a log message at the info level indicating that a sanity check
-    /// failed.
-    ///
-    /// Use this method during development to check for invalid usage. In
-    /// playgrounds or -Onone builds (the default for Xcode's Debug
-    /// configuration), program execution will be stopped in a debuggable state.
-    /// To fail similarly in Release builds, see `preconditionFailure`.
-    ///
-    /// - parameter statement: A string literal with optional interpolation.
-    /// - parameter file: The file name to print with `message` in a playground
-    ///   or `-Onone` build. The default is the file where the assertion failure
-    ///   was called.
-    /// - parameter line: The line number to print along with `message` in a
-    ///   playground or `-Onone` build. The default is the line where the
-    ///   assertion failure was called.
-    /// - parameter dso: The shared object handle, used by the OS to record
-    ///   debugging information. The default is the module where the
-    ///   assertion failure was called.
-    public static func assertionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
-        assertionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Performs a sanity check. If it fails, a log message is issued at the
@@ -289,29 +267,10 @@ public enum Log {
     /// - parameter line: The line number to print along with `message`.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    public static func preconditionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) -> Never {
+    public static func preconditionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) -> Never {
         let mirror = PreconditionFailureMirror(file: file, line: line)
         show(statement, for: .error, into: mirror, fromContainingBinary: dso)
         Swift.preconditionFailure("can't get here")
-    }
-
-    /// Issues a log message at the error level indicating that a precondition
-    /// was violated.
-    ///
-    /// Use this method to stop the program when control flow can only reach the
-    /// call if your API was improperly used. Program execution will be stopped.
-    ///
-    /// - parameter statement: A string literal with optional interpolation.
-    /// - parameter file: The file name to print with `message`. The default is
-    ///   the file where the precondition failure occurred.
-    /// - parameter line: The line number to print along with `message` in a
-    ///   playground or `-Onone` build. The default is the line where the
-    ///   precondition failure occurred.
-    /// - parameter dso: The shared object handle, used by the OS to record
-    ///   debugging information. The default is the module where the
-    ///   precondition failure occurred.
-    public static func preconditionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) -> Never {
-        preconditionFailure(statement(), file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Checks a necessary condition for making forward progress. If it fails,
@@ -491,31 +450,9 @@ extension LogSubsystem {
     ///   playground or `-Onone` build.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    public func assertionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) {
+    public func assertionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         let mirror = AssertionFailureMirror(file: file, line: line)
         Log.show(statement, for: .error, subsystem: Self.name, category: categoryName, into: mirror, fromContainingBinary: dso)
-    }
-
-    /// Issues a log message at the info level indicating that a sanity check
-    /// failed.
-    ///
-    /// Use this method during development to check for invalid usage. In
-    /// playgrounds or -Onone builds (the default for Xcode's Debug
-    /// configuration), program execution will be stopped in a debuggable state.
-    /// To fail similarly in Release builds, see `preconditionFailure`.
-    ///
-    /// - parameter statement: A string literal with optional interpolation.
-    /// - parameter file: The file name to print with `message` in a playground
-    ///   or `-Onone` build. The default is the file where the assertion failure
-    ///   was called.
-    /// - parameter line: The line number to print along with `message` in a
-    ///   playground or `-Onone` build. The default is the line where the
-    ///   assertion failure was called.
-    /// - parameter dso: The shared object handle, used by the OS to record
-    ///   debugging information. The default is the module where the
-    ///   assertion failure was called.
-    public func assertionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
-        assertionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Performs a sanity check. If it fails, a log message is issued at the
@@ -554,29 +491,10 @@ extension LogSubsystem {
     /// - parameter line: The line number to print along with `message`.
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   debugging information.
-    public func preconditionFailure(_ statement: () -> LogStatement, file: StaticString, line: UInt, fromContainingBinary dso: UnsafeRawPointer) -> Never {
+    public func preconditionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) -> Never {
         let mirror = PreconditionFailureMirror(file: file, line: line)
         Log.show(statement, for: .fault, subsystem: Self.name, category: categoryName, into: mirror, fromContainingBinary: dso)
         Swift.preconditionFailure("can't get here")
-    }
-
-    /// Issues a log message at the error level indicating that a precondition
-    /// was violated.
-    ///
-    /// Use this method to stop the program when control flow can only reach the
-    /// call if your API was improperly used. Program execution will be stopped.
-    ///
-    /// - parameter statement: A string literal with optional interpolation.
-    /// - parameter file: The file name to print with `message`. The default is
-    ///   the file where the precondition failure occurred.
-    /// - parameter line: The line number to print along with `message` in a
-    ///   playground or `-Onone` build. The default is the line where the
-    ///   precondition failure occurred.
-    /// - parameter dso: The shared object handle, used by the OS to record
-    ///   debugging information. The default is the module where the
-    ///   precondition failure occurred.
-    public func preconditionFailure(_ statement: @autoclosure() -> LogStatement, file: StaticString = #file, line: UInt = #line, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) -> Never {
-        preconditionFailure(statement, file: file, line: line, fromContainingBinary: dso)
     }
 
     /// Checks a necessary condition for making forward progress. If it fails,
