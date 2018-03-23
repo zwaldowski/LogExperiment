@@ -525,6 +525,31 @@ extension LogSubsystem {
 
 }
 
+/// A simple, named category for logs.
+///
+/// A typical use is for file-based logging:
+///
+///     private let Log = AppLogCategory(name: "imageCache")
+///
+///     extension MyImageCache {
+///         func logFailure(_ error: Error) {
+///             Log.error("Could not log in: \(error)")
+///         }
+///     }
+///
+public struct AppLogCategory: LogSubsystem {
+
+    public static var name: String {
+        return Bundle.main.bundleIdentifier ?? "unknown"
+    }
+
+    public let categoryName: String
+    public init(name categoryName: String) {
+        self.categoryName = categoryName
+    }
+
+}
+
 // MARK: - Log mirroring
 
 /// A type that may be used as a secondary target for log subsystems.
