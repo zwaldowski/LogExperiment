@@ -95,7 +95,11 @@ public enum Log {
 
         // Producing the LogStatement may set the errno, f.ex for floating point.
         let retaddr = LogStatementPacker.currentReturnAddress
-        let savedErrno = errno
+
+        // Send 0 for the errno to prevent the log message from causing a crash
+        // if the errorno is not in a valid range.  We don't take advantage of the
+        // errorno in our logging anyway (format specifier %m)
+        let savedErrno = Int32(0)
         let statement = makeStatement()
 
         // Send to os_log.
