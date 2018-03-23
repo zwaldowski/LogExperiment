@@ -121,7 +121,7 @@ public enum Log {
                         packer.add(double, precision: precision, options: [])
                     case .object(let object):
                         format.append("%@")
-                        packer.add(object, options: [])
+                        packer.add(object.toOpaque(), options: [])
                     }
                 }
                 return format

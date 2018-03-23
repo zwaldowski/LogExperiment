@@ -35,7 +35,7 @@ public struct LogStatement {
         case signed(Int)
         case unsigned(UInt)
         case float(Double, precision: CInt)
-        case object(UnsafeRawPointer)
+        case object(Unmanaged<AnyObject>)
     }
 
     let segments: [Segment]
@@ -100,6 +100,13 @@ extension LogStatement: _ExpressibleByStringInterpolation {
         self.init(stringInterpolationSegment: expression.native)
     }
 
+    public init<T: NSObject>(stringInterpolationSegment expression: T) {
+        // Unretained because we're not creating a new object. The description
+        // will be fetched within the containing log method. If we retained,
+        // `"\(self)" as LogStatement` in a `deinit` would explode.
+        segments = [ .object(Unmanaged.passUnretained(expression)) ]
+    }
+
     public init<T: CustomLogConvertible>(stringInterpolationSegment expression: T) {
         self = expression.logStatement
     }
@@ -112,13 +119,16 @@ extension LogStatement: _ExpressibleByStringInterpolation {
         self.init(UInt(expression))
     }
 
-    public init<T: NSObject>(stringInterpolationSegment expression: T) {
-        self.init(object: Unmanaged.passUnretained(expression).toOpaque())
+    // Needed as a tiebreaker.
+    public init<T: NSObject & CustomLogConvertible>(stringInterpolationSegment expression: T) {
+        self = expression.logStatement
     }
 
+    // Fallback for when the compiler finds no better version.
     public init<T>(stringInterpolationSegment expression: T) {
+        // Retained because we are creating a derived object.
         let string = String(describing: expression) as NSString
-        self.init(object: Unmanaged.passRetained(string).autorelease().toOpaque())
+        segments = [ .object(Unmanaged.passRetained(string).autorelease()) ]
     }
 
 }
@@ -145,7 +155,7 @@ extension LogStatement: CustomStringConvertible {
                 arguments.append(double)
             case .object(let object):
                 format.append("%@")
-                arguments.append(OpaquePointer(object))
+                arguments.append(OpaquePointer(object.toOpaque()))
             }
         }
 
