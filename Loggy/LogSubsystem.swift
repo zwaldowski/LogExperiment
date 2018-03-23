@@ -2,7 +2,7 @@
 //  LogSubsystem.swift
 //
 //  Created by Zachary Waldowski on 9/8/16.
-//  Copyright © 2016-2017 Big Nerd Ranch. Licensed under MIT.
+//  Copyright © 2016-2018 Big Nerd Ranch. Licensed under MIT.
 //
 
 import os.log

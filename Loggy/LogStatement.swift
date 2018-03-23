@@ -3,7 +3,7 @@
 //  Loggy
 //
 //  Created by Zachary Waldowski on 8/9/17.
-//  Copyright © 2017 Big Nerd Ranch. All rights reserved.
+//  Copyright © 2017-2018 Big Nerd Ranch. Licensed under MIT.
 //
 
 import Foundation

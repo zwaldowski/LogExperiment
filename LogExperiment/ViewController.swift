@@ -3,7 +3,7 @@
 //  LogExperiment
 //
 //  Created by Zachary Waldowski on 9/7/16.
-//  Copyright © 2016 Big Nerd Ranch. All rights reserved.
+//  Copyright © 2016-2018 Big Nerd Ranch. Licensed under MIT.
 //
 
 import UIKit
@@ -35,11 +35,6 @@ class ViewController: UIViewController {
                 Log.processing.error("Things are going bad down here, cap'n!")
             }
         }
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
 
 }

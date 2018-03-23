@@ -1,5 +1,6 @@
 //
 //  Activity.swift
+//  Loggy
 //
 //  Created by Zachary Waldowski on 8/21/16.
 //  Copyright © 2016-2017 Big Nerd Ranch. Licensed under MIT.
