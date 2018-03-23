@@ -22,16 +22,16 @@ class ViewController: UIViewController {
         Log.ui.debug("This will only show in Xcode! Hello, \(text)!")
 
         let rect = CGRect(x: 1.5, y: 2, width: 3, height: 4)
-        Log.ui.show("Hello, scalar. \(rect.minX)")
+        Log.ui.show("Next, a scalar: \(rect.minX)")
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        Activity(label: "stuff").active {
+        Activity.label("stuff") {
             Log.processing.show("Doing some work...")
 
-            Activity(label: "more stuff").active {
+            Activity.label("more stuff") {
                 Log.processing.error("Things are going bad down here, cap'n!")
             }
         }

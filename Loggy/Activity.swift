@@ -67,7 +67,7 @@ public struct Activity {
     }
 
     /// Executes a function `body` within the context of the activity.
-    public func active<Return>(execute body: () throws -> Return) rethrows -> Return {
+    public func execute<Return>(_ body: () throws -> Return) rethrows -> Return {
         func impl(execute work: () throws -> Return, recover: (Error) throws -> Return) rethrows -> Return {
             var result: Return!
             var error: Error?
@@ -89,6 +89,11 @@ public struct Activity {
         }
 
         return try impl(execute: body, recover: { throw $0 })
+    }
+
+    /// Executes a named group of code `body` under a `label`.
+    public static func label<Return>(_ label: StaticString, fromContainingBinary dso: UnsafeRawPointer = #dsohandle, execute body: () throws -> Return) rethrows -> Return {
+        return try Activity(label: label, containingBinary: dso).execute(body)
     }
 
     /// Opaque structure created by `Activity.enter()` and restored using
