@@ -110,6 +110,9 @@ public enum Log {
                     switch segment {
                     case .literal(let string):
                         format.append(string)
+                    case .string(let string):
+                        format.append("%@")
+                        packer.add(Unmanaged.passRetained(string as NSString).autorelease().toOpaque(), options: [])
                     case .signed(let int):
                         format.append("%zd")
                         packer.add(int, options: [])

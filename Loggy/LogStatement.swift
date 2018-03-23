@@ -32,6 +32,7 @@ public struct LogStatement {
 
     enum Segment {
         case literal(String)
+        case string(String)
         case signed(Int)
         case unsigned(UInt)
         case float(Double, precision: CInt)
@@ -40,36 +41,12 @@ public struct LogStatement {
 
     let segments: [Segment]
 
-    fileprivate init(_ segments: [Segment]) {
-        self.segments = segments
-    }
-
-    fileprivate init(_ segment: String) {
-        self.segments = [ .literal(segment) ]
-    }
-
-    fileprivate init(_ int: Int) {
-        self.segments = [ .signed(int) ]
-    }
-
-    fileprivate init(_ int: UInt) {
-        self.segments = [ .unsigned(int) ]
-    }
-
-    fileprivate init(_ double: Double, precision: CInt) {
-        self.segments = [ .float(double, precision: precision) ]
-    }
-
-    fileprivate init(object: UnsafeRawPointer) {
-        self.segments = [ .object(object) ]
-    }
-
 }
 
 extension LogStatement: ExpressibleByStringLiteral {
 
     public init(stringLiteral value: String) {
-        self.init(value)
+        segments = [ .string(value) ]
     }
 
 }
@@ -77,23 +54,39 @@ extension LogStatement: ExpressibleByStringLiteral {
 extension LogStatement: _ExpressibleByStringInterpolation {
 
     public init(stringInterpolation strings: LogStatement...) {
-        self.init(strings.flatMap({ $0.segments }))
+        segments = strings.enumerated().flatMap { (i: Int, substring: LogStatement) -> [LogStatement.Segment] in
+            if i % 2 == 0, substring.segments.count == 1, case .string(let literal) = substring.segments[0] {
+                return [ .literal(literal) ]
+            } else {
+                return substring.segments
+            }
+        }
     }
 
-    public init(stringInterpolationSegment segment: String) {
-        self.init(segment)
-    }
+    // Concrete specializations.
 
     public init(stringInterpolationSegment statement: LogStatement) {
         self = statement
     }
 
+    public init(stringInterpolationSegment segment: String) {
+        self.init(stringLiteral: segment)
+    }
+
+    public init<T: BinaryInteger>(stringInterpolationSegment expression: T) {
+        segments = [ .signed(Int(expression)) ]
+    }
+
+    public init<T: UnsignedInteger>(stringInterpolationSegment expression: T) {
+        segments = [ .unsigned(UInt(expression)) ]
+    }
+
     public init(stringInterpolationSegment expression: Float) {
-        self.init(Double(expression), precision: FLT_DIG)
+        segments = [ .float(Double(expression), precision: FLT_DIG) ]
     }
 
     public init(stringInterpolationSegment expression: Double) {
-        self.init(expression, precision: DBL_DIG)
+        segments = [ .float(expression, precision: DBL_DIG) ]
     }
 
     public init(stringInterpolationSegment expression: CGFloat) {
@@ -111,12 +104,14 @@ extension LogStatement: _ExpressibleByStringInterpolation {
         self = expression.logStatement
     }
 
-    public init<T: Integer>(stringInterpolationSegment expression: T) {
-        self.init(Int(expression))
+    // Needed as a tiebreaker.
+    public init<T: BinaryInteger & CustomLogConvertible>(stringInterpolationSegment expression: T) {
+        self = expression.logStatement
     }
 
-    public init<T: UnsignedInteger>(stringInterpolationSegment expression: T) {
-        self.init(UInt(expression))
+    // Needed as a tiebreaker.
+    public init<T: UnsignedInteger & CustomLogConvertible>(stringInterpolationSegment expression: T) {
+        self = expression.logStatement
     }
 
     // Needed as a tiebreaker.
@@ -143,6 +138,9 @@ extension LogStatement: CustomStringConvertible {
             switch segment {
             case .literal(let string):
                 format.append(string)
+            case .string(let string):
+                format.append("%@")
+                arguments.append(string)
             case .signed(let int):
                 format.append("%zd")
                 arguments.append(int)
