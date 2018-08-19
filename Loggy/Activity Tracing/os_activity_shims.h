@@ -15,24 +15,28 @@
 
 #import <os/activity.h>
 
+OS_ASSUME_NONNULL_BEGIN
+
 OS_INLINE OS_ALWAYS_INLINE
-os_activity_t _Nonnull __loggy_os_activity_none(void) {
+os_activity_t loggy_os_activity_none(void) {
     return OS_ACTIVITY_NONE;
 }
 
 OS_INLINE OS_ALWAYS_INLINE
-os_activity_t _Nonnull __loggy_os_activity_current(void) {
+os_activity_t loggy_os_activity_current(void) {
     return OS_ACTIVITY_CURRENT;
 }
 
 OS_INLINE OS_ALWAYS_INLINE
-_Nonnull os_activity_t __loggy_os_activity_create(const void *_Nonnull dso, const uint8_t *_Nullable description, os_activity_t _Nonnull parent, uint32_t flags) {
+os_activity_t loggy_os_activity_create(const void *dso, const uint8_t *_Nullable description, os_activity_t parent, os_activity_flag_t flags) {
     return _os_activity_create((void *)dso, (const char *)description, parent, flags);
 }
 
 OS_INLINE OS_ALWAYS_INLINE
-void __loggy_os_activity_label_useraction(const void *_Nonnull dso, const uint8_t *_Nullable name) {
+void loggy_os_activity_label_useraction(const void *dso, const uint8_t *_Nullable name) {
     _os_activity_label_useraction((void *)dso, (const char *)name);
 }
+
+OS_ASSUME_NONNULL_END
 
 #endif /* __loggy_os_activity_shims_h__ */

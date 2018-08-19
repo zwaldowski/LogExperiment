@@ -9,13 +9,14 @@
 import os.activity
 
 /// Groups together code executing in response to a certain event, no matter on
-/// what queues and in what processes the code is executing.
+/// what queues nor in what processes that code is executing.
 ///
 /// Activities form a stack, including several activities defined by the
 /// platform, such as button taps in UIKit.
 ///
 /// Activities are logged into crash reports and are implicitly associated
-/// with log messages.
+/// with log messages. You can view the hierarchy of activities in your app by
+/// using the "Activities" mode in the toolbar of Console app.
 ///
 /// For more info:
 /// - https://www.objc.io/issues/19-debugging/activity-tracing/
@@ -24,27 +25,43 @@ public struct Activity {
 
     /// Support flags for Activity.
     public struct Options: OptionSet {
-        public let rawValue: UInt32
-        public init(rawValue: UInt32) {
+
+        public typealias RawValue = os_activity_flag_t.RawValue
+
+        public let rawValue: RawValue
+        public init(rawValue: RawValue) {
             self.rawValue = rawValue
+        }
+
+        private init(_ flag: os_activity_flag_t) {
+            self.rawValue = flag.rawValue
         }
 
         /// Detach a newly created activity from a parent activity, if any.
         ///
         /// If passed in conjunction with a parent activity, the activity will
-        /// only note what activity "created" the new one, but will make the
-        /// new activity a top level activity. This allows seeing what
-        /// activity triggered work without actually relating the activities.
-        public static let detached = Options(rawValue: OS_ACTIVITY_FLAG_DETACHED.rawValue)
+        /// only note the parent "created" the new one, but will make the new
+        /// activity top-level. This allows seeing what activity triggered work
+        /// without actually relating the activities.
+        ///
+        /// Example use: a refresh control manually triggers a sync process that
+        /// otherwise runs automatically. While logging, it is more useful to
+        /// see that the sync process began than the actions that led up to it.
+        public static let detached = Options(OS_ACTIVITY_FLAG_DETACHED)
 
         /// Will only create a new activity if none present.
         ///
         /// If an activity ID is already present, a new activity will be
         /// returned with the same underlying activity ID.
-        public static let ifNonePresent = Options(rawValue: OS_ACTIVITY_FLAG_IF_NONE_PRESENT.rawValue)
+        ///
+        /// Example use: you want to know when a class of database object is
+        /// being created, but not if it's already in the context of a CRUD
+        /// loop.
+        public static let ifNonePresent = Options(OS_ACTIVITY_FLAG_IF_NONE_PRESENT)
     }
 
-    private let reference: os_activity_t
+    fileprivate let reference: os_activity_t
+
     fileprivate init(_ reference: os_activity_t) {
         self.reference = reference
     }
@@ -60,9 +77,9 @@ public struct Activity {
     /// - parameter dso: The shared object handle, used by the OS to record
     ///   extra debugging information. The default is the module where the
     ///   activity was created.
-    public init(label: StaticString, parent: Activity = .current, options: Options = [], containingBinary dso: UnsafeRawPointer = #dsohandle) {
-        self.reference = label.withUTF8Buffer { (buffer) in
-            __loggy_os_activity_create(dso, buffer.baseAddress, parent.reference, options.rawValue)
+    public init(named name: StaticString, parent: Activity = .current, options: Options = [], containingBinary dso: UnsafeRawPointer = #dsohandle) {
+        self.reference = name.withUTF8Buffer { (buffer) in
+            loggy_os_activity_create(dso, buffer.baseAddress, parent.reference, os_activity_flag_t(rawValue: options.rawValue))
         }
     }
 
@@ -85,41 +102,15 @@ public struct Activity {
             } else {
                 return result!
             }
-
         }
 
         return try impl(execute: body, recover: { throw $0 })
     }
 
     /// Executes a named group of code `body` under a `label`.
-    public static func label<Return>(_ label: StaticString, fromContainingBinary dso: UnsafeRawPointer = #dsohandle, execute body: () throws -> Return) rethrows -> Return {
-        return try Activity(label: label, containingBinary: dso).execute(body)
-    }
-
-    /// Opaque structure created by `Activity.enter()` and restored using
-    /// `leave()`.
-    public struct Scope {
-        fileprivate var state = os_activity_scope_state_s()
-        fileprivate init() {}
-
-        /// Pops activity state to `self`.
-        public mutating func leave() {
-            os_activity_scope_leave(&state)
-        }
-    }
-
-    /// Changes the current execution context to the activity.
-    ///
-    /// An activity can be created and applied to the current scope by doing:
-    ///
-    ///    var scope = Activity("my new activity").enter()
-    ///    defer { scope.leave() }
-    ///    ... do some work ...
-    ///
-    public func enter() -> Scope {
-        var scope = Scope()
-        os_activity_scope_enter(reference, &scope.state)
-        return scope
+    public static func label<Return>(_ label: StaticString, parent: Activity = .current, options: Options = [], containingBinary dso: UnsafeRawPointer = #dsohandle, execute body: () throws -> Return) rethrows -> Return {
+        let activity = Activity(named: label, parent: parent, options: options, containingBinary: dso)
+        return try activity.execute(body)
     }
     
 }
@@ -142,16 +133,16 @@ extension Activity {
     ///    Activity.labelUserAction("Empty trash")
     ///
     /// Where the underlying name will be "gesture:" or "menuSelect:".
-    public static func labelUserAction(_ description: StaticString, containingBinary dso: UnsafeRawPointer = #dsohandle) {
+    public static func labelUserAction(_ description: StaticString, fromContainingBinary dso: UnsafeRawPointer = #dsohandle) {
         description.withUTF8Buffer { (buffer) in
-            __loggy_os_activity_label_useraction(dso, buffer.baseAddress)
+            loggy_os_activity_label_useraction(dso, buffer.baseAddress)
         }
     }
 
     /// An activity with no traits; as a parent, it is equivalent to a
     /// detached activity.
     public static var none: Activity {
-        return Activity(__loggy_os_activity_none())
+        return Activity(loggy_os_activity_none())
     }
 
     /// The running activity.
@@ -159,7 +150,7 @@ extension Activity {
     /// As a parent, the new activity is linked to the current activity, if one
     /// is present. If no activity is present, it behaves the same as `.none`.
     public static var current: Activity {
-        return Activity(__loggy_os_activity_current())
+        return Activity(loggy_os_activity_current())
     }
 
 }
