@@ -9,30 +9,30 @@
 import UIKit
 import Loggy
 
-class ViewController: UIViewController {
+let uiLog = OSLog(subsystem: "com.bignerdranch.LogExperiment", category: "ViewController.UI")
+let processingLog = OSLog(subsystem: "com.bignerdranch.LogExperiment", category: "ViewController.Processing")
 
-    enum Log: LogSubsystem {
-        case processing, ui, actions
-    }
+class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         let text = "Xcode"
-        Log.ui.debug("This will only show in Xcode! Hello, \(text)!")
+        uiLog.debug("This will only show in Xcode! Hello, \(text)!")
 
         let rect = CGRect(x: 1.5, y: 2, width: 3, height: 4)
-        Log.ui.show("Next, a scalar: \(rect.minX)")
+        uiLog.show("Next, a scalar: \(rect.minX)")
+        uiLog.show("Now, more complex: \(rect)")
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         Activity.label("stuff") {
-            Log.processing.show("Doing some work...")
+            processingLog.show("Doing some work...")
 
             Activity.label("more stuff") {
-                Log.processing.error("Things are going bad down here, cap'n!")
+                processingLog.error("Things are going bad down here, cap'n!")
             }
         }
     }

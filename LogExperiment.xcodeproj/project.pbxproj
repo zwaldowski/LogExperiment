@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		DB40966C1F3C0761004F8984 /* os_log_shims.h in Headers */ = {isa = PBXBuildFile; fileRef = DB40966B1F3C0761004F8984 /* os_log_shims.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4ED7301D81F633000F38A6 /* Loggy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7351D81F633000F38A6 /* Loggy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; };
 		DB4ED7361D81F633000F38A6 /* Loggy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -16,11 +15,12 @@
 		DB8874041D806685008FF01B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB8874021D806685008FF01B /* Main.storyboard */; };
 		DB8874061D806685008FF01B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DB8874051D806685008FF01B /* Assets.xcassets */; };
 		DB8874091D806685008FF01B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB8874071D806685008FF01B /* LaunchScreen.storyboard */; };
-		DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */; };
+		DBBBCBCE2129E8300013FEA5 /* OSLog+LogStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBBCBCD2129E8300013FEA5 /* OSLog+LogStatement.swift */; };
 		DBC7B4DC1F3B648B00FADEC6 /* LogStatement.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */; };
-		DBC7B4E21F3B675B00FADEC6 /* os_log_shims.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC7B4DF1F3B675B00FADEC6 /* os_log_shims.m */; };
-		DBC7B4E51F3B7BCB00FADEC6 /* os_log_shims_private.h in Headers */ = {isa = PBXBuildFile; fileRef = DBC7B4E31F3B676400FADEC6 /* os_log_shims_private.h */; };
+		DBCB1243212A0C1000376A9A /* CustomLogConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBCB1242212A0C1000376A9A /* CustomLogConvertible.swift */; };
 		DBCB1244212A133400376A9A /* os_activity_shims.h in Headers */ = {isa = PBXBuildFile; fileRef = DB40966E1F3C2B40004F8984 /* os_activity_shims.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBCB124A212A26F700376A9A /* os_log_shims.h in Headers */ = {isa = PBXBuildFile; fileRef = DBCB1248212A26F700376A9A /* os_log_shims.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBCB124B212A26F700376A9A /* os_log_shims.c in Sources */ = {isa = PBXBuildFile; fileRef = DBCB1249212A26F700376A9A /* os_log_shims.c */; };
 		DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBEE0BF41D8270AF007A562E /* Activity.swift */; };
 /* End PBXBuildFile section */
 
@@ -49,7 +49,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		DB40966B1F3C0761004F8984 /* os_log_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_log_shims.h; sourceTree = "<group>"; };
 		DB40966E1F3C2B40004F8984 /* os_activity_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_activity_shims.h; sourceTree = "<group>"; };
 		DB4ED72E1D81F633000F38A6 /* Loggy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Loggy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB4ED7301D81F633000F38A6 /* Loggy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Loggy.h; sourceTree = "<group>"; };
@@ -61,10 +60,11 @@
 		DB8874051D806685008FF01B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		DB8874081D806685008FF01B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		DB88740A1D806685008FF01B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LogSubsystem.swift; sourceTree = "<group>"; };
+		DBBBCBCD2129E8300013FEA5 /* OSLog+LogStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OSLog+LogStatement.swift"; sourceTree = "<group>"; };
 		DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogStatement.swift; sourceTree = "<group>"; };
-		DBC7B4DF1F3B675B00FADEC6 /* os_log_shims.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = os_log_shims.m; sourceTree = "<group>"; };
-		DBC7B4E31F3B676400FADEC6 /* os_log_shims_private.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_log_shims_private.h; sourceTree = "<group>"; };
+		DBCB1242212A0C1000376A9A /* CustomLogConvertible.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomLogConvertible.swift; sourceTree = "<group>"; };
+		DBCB1248212A26F700376A9A /* os_log_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_log_shims.h; sourceTree = "<group>"; };
+		DBCB1249212A26F700376A9A /* os_log_shims.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = os_log_shims.c; sourceTree = "<group>"; };
 		DBEE0BF41D8270AF007A562E /* Activity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Activity.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -91,12 +91,8 @@
 			isa = PBXGroup;
 			children = (
 				DB4ED7301D81F633000F38A6 /* Loggy.h */,
-				DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */,
-				DBA4A3601E4BA0BA00C54E59 /* LogSubsystem.swift */,
-				DB40966B1F3C0761004F8984 /* os_log_shims.h */,
-				DBC7B4E31F3B676400FADEC6 /* os_log_shims_private.h */,
-				DBC7B4DF1F3B675B00FADEC6 /* os_log_shims.m */,
 				DBCB1278212A922400376A9A /* Activity Tracing */,
+				DBCB1279212A923000376A9A /* Logging */,
 				DB4ED7311D81F633000F38A6 /* Info.plist */,
 			);
 			path = Loggy;
@@ -142,6 +138,18 @@
 			path = "Activity Tracing";
 			sourceTree = "<group>";
 		};
+		DBCB1279212A923000376A9A /* Logging */ = {
+			isa = PBXGroup;
+			children = (
+				DBCB1242212A0C1000376A9A /* CustomLogConvertible.swift */,
+				DBC7B4DB1F3B648B00FADEC6 /* LogStatement.swift */,
+				DBCB1248212A26F700376A9A /* os_log_shims.h */,
+				DBCB1249212A26F700376A9A /* os_log_shims.c */,
+				DBBBCBCD2129E8300013FEA5 /* OSLog+LogStatement.swift */,
+			);
+			path = Logging;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -149,10 +157,9 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DBCB124A212A26F700376A9A /* os_log_shims.h in Headers */,
 				DBCB1244212A133400376A9A /* os_activity_shims.h in Headers */,
 				DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */,
-				DB40966C1F3C0761004F8984 /* os_log_shims.h in Headers */,
-				DBC7B4E51F3B7BCB00FADEC6 /* os_log_shims_private.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -264,10 +271,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DBC7B4E21F3B675B00FADEC6 /* os_log_shims.m in Sources */,
+				DBBBCBCE2129E8300013FEA5 /* OSLog+LogStatement.swift in Sources */,
+				DBCB1243212A0C1000376A9A /* CustomLogConvertible.swift in Sources */,
+				DBCB124B212A26F700376A9A /* os_log_shims.c in Sources */,
 				DBC7B4DC1F3B648B00FADEC6 /* LogStatement.swift in Sources */,
 				DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */,
-				DBA4A3611E4BA0BA00C54E59 /* LogSubsystem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
