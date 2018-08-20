@@ -73,6 +73,19 @@ extension LogStatementEncoder {
         }
     }
 
+    #if swift(>=4.1.50)
+
+    @available(macOS 10.14, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
+    mutating func send(format: String, to log: OSLog, for type: OSSignpostType, name: StaticString, id: OSSignpostID, fromAddress ra: UnsafeRawPointer, containingBinary dso: UnsafeRawPointer) {
+        format.withCString { (formatPtr) in
+            name.withUTF8Buffer { (nameBuffer) in
+                __send(format: formatPtr, to: log, for: type, name: nameBuffer.baseAddress, id: id.rawValue, fromAddress: ra, containingBinary: dso)
+            }
+        }
+    }
+
+    #endif
+
 }
 
 extension OSLog {
@@ -241,6 +254,64 @@ extension OSLog {
     }
 
 }
+
+#if swift(>=4.1.50)
+
+// MARK: - Signposts
+
+extension OSLog {
+
+    /// Marks a point of interest for debugging performance in Instruments.
+    ///
+    /// Signposts allow you to fence areas of your code, such as "fetch image",
+    /// within the category specified by the log, such as "feed view". The
+    /// begin and end points, as well as any events in between, form the
+    /// lifecycle of some operation.
+    ///
+    /// The messages emitted by signposts do not show up in Console and aren't
+    /// written to the data store. Instead, they are meant to be viewed and
+    /// manipulated in Instruments.
+    ///
+    /// For more info:
+    /// - https://developer.apple.com/videos/play/wwdc2018/405/
+    @available(macOS 10.14, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
+    public func signpost(_ type: OSSignpostType, named name: StaticString, id signpostID: OSSignpostID = .exclusive, _ statement: @autoclosure() -> LogStatement = LogStatement(), containingBinary dso: UnsafeRawPointer = #dsohandle) {
+        guard signpostsEnabled, signpostID != .invalid, signpostID != .null else { return }
+
+        // The instrumentation performed by os_signpost should not include this
+        // function or any it calls in the course of building the log buffer.
+        let retaddr = LogStatementEncoder.currentReturnAddress
+
+        // Now we're ready to build up the string literal.
+        let statement = statement()
+
+        var format = ""
+        var encoder = LogStatementEncoder()
+        encoder.append(statement.variant, appendingToFormat: &format)
+        encoder.send(format: format, to: self, for: type, name: name, id: signpostID, fromAddress: retaddr, containingBinary: dso)
+    }
+
+    /// Marks a point of interest for debugging performance in Instruments.
+    ///
+    /// Signposts allow you to fence areas of your code, such as "fetch image",
+    /// within the category specified by the log, such as "feed view". The
+    /// begin and end points, as well as any events in between, form the
+    /// lifecycle of some operation.
+    ///
+    /// The messages emitted by signposts do not show up in Console and aren't
+    /// written to the data store. Instead, they are meant to be viewed and
+    /// manipulated in Instruments.
+    ///
+    /// For more info:
+    /// - https://developer.apple.com/videos/play/wwdc2018/405/
+    @available(macOS 10.14, iOS 12.0, watchOS 5.0, tvOS 12.0, *)
+    public static func signpost(_ type: OSSignpostType, named name: StaticString, id signpostID: OSSignpostID = .exclusive, _ statement: @autoclosure() -> LogStatement = LogStatement(), containingBinary dso: UnsafeRawPointer = #dsohandle) {
+        self.default.signpost(type, named: name, id: signpostID, statement, containingBinary: dso)
+    }
+
+}
+
+#endif
 
 // MARK: - Conveniences
 

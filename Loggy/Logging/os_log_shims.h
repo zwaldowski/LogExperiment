@@ -14,7 +14,13 @@
 #define __loggy_os_log_shims_h__
 
 #include <os/log.h>
+
+#if __has_include(<os/signpost.h>)
+#define LOGGY_HAS_OS_SIGNPOST 1
 #include <os/signpost.h>
+#else
+#define LOGGY_HAS_OS_SIGNPOST 0
+#endif
 
 OS_ASSUME_NONNULL_BEGIN
 
@@ -48,6 +54,16 @@ void loggy_os_log_encoder_add_object(loggy_os_log_encoder_t encoder, const void 
 
 OS_SWIFT_NAME(LogStatementEncoder.__send(self:format:to:at:fromAddress:containingBinary:)) OS_REFINED_FOR_SWIFT
 void loggy_os_log_send(loggy_os_log_encoder_t encoder, const char *fmt, os_log_t h, os_log_type_t type, const void *ra, const void *dso);
+
+#if LOGGY_HAS_OS_SIGNPOST
+
+#define LOGGY_OS_SIGNPOST_AVAILABILITY API_AVAILABLE(macosx(10.14), ios(12.0), tvos(12.0), watchos(5.0))
+
+LOGGY_OS_SIGNPOST_AVAILABILITY OS_REFINED_FOR_SWIFT
+OS_SWIFT_NAME(LogStatementEncoder.__send(self:format:to:for:name:id:fromAddress:containingBinary:))
+void loggy_os_signpost_send(loggy_os_log_encoder_t encoder, const char *fmt, os_log_t h, os_signpost_type_t spty, const uint8_t *_Nullable spnm, os_signpost_id_t spid, const void *ra, const void *dso);
+
+#endif
 
 OS_ASSUME_NONNULL_END
 

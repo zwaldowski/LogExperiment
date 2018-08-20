@@ -130,3 +130,22 @@ void loggy_os_log_send(loggy_os_log_encoder_t encoder, const char *fmt, os_log_t
         _os_log_impl((void *)dso, h, type, fmt, encoder->ob_b, encoder->ob_len);
     }
 }
+
+#if LOGGY_HAS_OS_SIGNPOST
+
+LOGGY_OS_SIGNPOST_AVAILABILITY
+extern uint8_t *_os_signpost_pack_fill(os_log_pack_t pack, size_t size, int saved_errno, const void *dso, const char *fmt, const char *spnm, os_signpost_id_t spid);
+
+LOGGY_OS_SIGNPOST_AVAILABILITY
+extern void _os_signpost_pack_send(os_log_pack_t pack, os_log_t h, os_signpost_type_t spty);
+
+void loggy_os_signpost_send(loggy_os_log_encoder_t encoder, const char *fmt, os_log_t h, os_signpost_type_t spty, const uint8_t *spnm, os_signpost_id_t spid, const void *ra, const void *dso) {
+    size_t sz = _os_log_pack_size(encoder->ob_len);
+    uint8_t buf[sz];
+    uint8_t *ptr = _os_signpost_pack_fill((os_log_pack_t)buf, sz, 0, dso, fmt, (const char *)spnm, spid);
+    ((os_log_pack_t)buf)->olp_pc = ra;
+    memcpy(ptr, encoder->ob_b, encoder->ob_len);
+    _os_signpost_pack_send((os_log_pack_t)buf, h, spty);
+}
+
+#endif

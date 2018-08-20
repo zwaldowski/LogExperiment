@@ -45,6 +45,11 @@ public struct LogStatement {
 
     let variant: Variant
 
+    /// Creates an empty log statement.
+    public init() {
+        variant = .literal("")
+    }
+
 }
 
 extension LogStatement: ExpressibleByStringLiteral {
