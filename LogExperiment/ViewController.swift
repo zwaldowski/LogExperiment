@@ -9,8 +9,8 @@
 import UIKit
 import Loggy
 
-let uiLog = OSLog(subsystem: "com.bignerdranch.LogExperiment", category: "ViewController.UI")
-let processingLog = OSLog(subsystem: "com.bignerdranch.LogExperiment", category: "ViewController.Processing")
+let uiLog = OSLog(named: "ViewController.UI")
+let processingLog = OSLog(named: "ViewController.Processing")
 
 class ViewController: UIViewController {
 

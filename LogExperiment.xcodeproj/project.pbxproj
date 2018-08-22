@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		DB28FAFF212D35A9004014F7 /* OSLog+AppCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB28FAFE212D35A9004014F7 /* OSLog+AppCategory.swift */; };
 		DB4ED7321D81F633000F38A6 /* Loggy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4ED7301D81F633000F38A6 /* Loggy.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB4ED7351D81F633000F38A6 /* Loggy.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; };
 		DB4ED7361D81F633000F38A6 /* Loggy.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = DB4ED72E1D81F633000F38A6 /* Loggy.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -49,6 +50,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DB28FAFE212D35A9004014F7 /* OSLog+AppCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OSLog+AppCategory.swift"; sourceTree = "<group>"; };
 		DB40966E1F3C2B40004F8984 /* os_activity_shims.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = os_activity_shims.h; sourceTree = "<group>"; };
 		DB4ED72E1D81F633000F38A6 /* Loggy.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Loggy.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB4ED7301D81F633000F38A6 /* Loggy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Loggy.h; sourceTree = "<group>"; };
@@ -146,6 +148,7 @@
 				DBCB1248212A26F700376A9A /* os_log_shims.h */,
 				DBCB1249212A26F700376A9A /* os_log_shims.c */,
 				DBBBCBCD2129E8300013FEA5 /* OSLog+LogStatement.swift */,
+				DB28FAFE212D35A9004014F7 /* OSLog+AppCategory.swift */,
 			);
 			path = Logging;
 			sourceTree = "<group>";
@@ -275,6 +278,7 @@
 				DBCB1243212A0C1000376A9A /* CustomLogConvertible.swift in Sources */,
 				DBCB124B212A26F700376A9A /* os_log_shims.c in Sources */,
 				DBC7B4DC1F3B648B00FADEC6 /* LogStatement.swift in Sources */,
+				DB28FAFF212D35A9004014F7 /* OSLog+AppCategory.swift in Sources */,
 				DBEE0BF51D8270AF007A562E /* Activity.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
